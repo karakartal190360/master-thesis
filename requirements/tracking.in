@@ -1,0 +1,2 @@
+# Latest inspected W&B SDK supporting the research environment's Python 3.9.
+wandb==0.26.1
