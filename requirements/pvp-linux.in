@@ -1,0 +1,27 @@
+# Main-PVP software runtime checked on Ubuntu WSL2, 2026-11-04.
+# This is our dependency selection; pretrained model validation remains pending.
+numpy==1.21.2
+pandas==1.4.3
+scipy==1.7.2
+torch==2.6.0
+torchaudio==2.6.0
+speechbrain==1.0.2
+transformers==4.46.3
+huggingface-hub==0.25.2
+phonemizer==3.3.0
+librosa==0.10.2.post1
+numba==0.56.4
+soundfile==0.12.1
+scikit-learn==1.1.3
+joblib==1.4.2
+tqdm==4.67.1
+
+# Constraints from the pinned fairseq setup.py; its source build passed on WSL2.
+hydra-core>=1.0.7,<1.1
+omegaconf<2.1
+cffi
+Cython==0.29.37
+wheel==0.45.1
+regex
+sacrebleu>=1.4.12
+bitarray

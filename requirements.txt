@@ -1,0 +1,11 @@
+# macOS development checks; not the official Linux experiment environment.
+numpy==1.21.2
+pandas==1.4.3
+scipy==1.7.3
+scikit-learn==1.1.3
+librosa==0.10.2.post1
+numba==0.56.4
+soundfile==0.12.1
+torch==2.6.0
+transformers==4.46.3
+huggingface-hub==0.25.2

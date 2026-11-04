@@ -218,3 +218,45 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Research data and generated artifacts
+.DS_Store
+/data/*
+!/data/README.md
+!/data/protocols/
+!/data/metadata/
+/models/*
+!/models/README.md
+/results/*
+!/results/README.md
+/wandb/
+/tmp/
+/output/
+.hf_cache/
+pretrained_models/
+exp/
+
+# Legacy upstream runtime paths
+/original/PVP/results/
+/original/PVP/zh_famous/
+/original/PVP/FamousFigure/
+/original/PVP/zh_famous_samples/
+/original/PVP/famous_figures_samples/
+/original/PVP/In-the-Wild/
+
+# Audio, checkpoints, profiles, and numeric caches
+*.wav
+*.flac
+*.mp3
+*.m4a
+*.ogg
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.pkl
+*.pickle
+*.joblib
+*.npy
+*.npz
+*.parquet

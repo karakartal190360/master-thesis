@@ -1,0 +1,97 @@
+{
+  "inspected_on": "2026-11-04",
+  "status": "Downloaded and file integrity verified on WSL on 2026-11-04; model loading pending",
+  "models": [
+    {
+      "repository": "nii-yamagishilab/mms-300m-anti-deepfake",
+      "revision": "7928e119e09f616b2ce698892e00ca22dbaa40bf",
+      "directory": "mms-300m-anti-deepfake",
+      "files": [
+        {
+          "path": "config.json",
+          "size_bytes": 2046,
+          "sha256": null
+        },
+        {
+          "path": "model.safetensors",
+          "size_bytes": 1269622944,
+          "sha256": "9bd5d9785bf72f91dfca8508651354946c4b307921cb358505e1b94035102224"
+        }
+      ]
+    },
+    {
+      "repository": "facebook/wav2vec2-xlsr-53-espeak-cv-ft",
+      "revision": "2c733782da5604684829819a5eb744c193fe9398",
+      "directory": "wav2vec2-xlsr-53-espeak-cv-ft",
+      "files": [
+        {
+          "path": "config.json",
+          "size_bytes": 1856,
+          "sha256": null
+        },
+        {
+          "path": "preprocessor_config.json",
+          "size_bytes": 212,
+          "sha256": null
+        },
+        {
+          "path": "pytorch_model.bin",
+          "size_bytes": 1263535127,
+          "sha256": "04366b6c8d24099ef313cf02f0e58d26f5dddfda16edbfc8eb2c713d94a9f551"
+        },
+        {
+          "path": "special_tokens_map.json",
+          "size_bytes": 85,
+          "sha256": null
+        },
+        {
+          "path": "tokenizer_config.json",
+          "size_bytes": 412,
+          "sha256": null
+        },
+        {
+          "path": "vocab.json",
+          "size_bytes": 4637,
+          "sha256": null
+        }
+      ]
+    },
+    {
+      "repository": "speechbrain/spkrec-ecapa-voxceleb",
+      "revision": "0f99f2d0ebe89ac095bcc5903c4dd8f72b367286",
+      "directory": "spkrec-ecapa-voxceleb",
+      "files": [
+        {
+          "path": "classifier.ckpt",
+          "size_bytes": 5534328,
+          "sha256": "fd9e3634fe68bd0a427c95e354c0c677374f62b3f434e45b78599950d860d535"
+        },
+        {
+          "path": "config.json",
+          "size_bytes": 51,
+          "sha256": null
+        },
+        {
+          "path": "embedding_model.ckpt",
+          "size_bytes": 83316686,
+          "sha256": "0575cb64845e6b9a10db9bcb74d5ac32b326b8dc90352671d345e2ee3d0126a2"
+        },
+        {
+          "path": "hyperparams.yaml",
+          "size_bytes": 1919,
+          "sha256": null
+        },
+        {
+          "path": "label_encoder.txt",
+          "size_bytes": 128619,
+          "sha256": null
+        },
+        {
+          "path": "mean_var_norm_emb.ckpt",
+          "size_bytes": 1921,
+          "sha256": null
+        }
+      ]
+    }
+  ]
+}
