@@ -17,9 +17,16 @@ Build a scientifically reproducible baseline before investigating a new contribu
 
 Priority: November 2026-February 2027. Initial PVP reproduction target: end of November 2026.
 Understand PVP, prepare its environment and official benchmark protocols, reproduce selected
-experiments, compare EER and ROC-AUC with the paper, then evaluate German and English speech
-and cross-language enrollment where suitable data exist. Document methods, results,
+experiments, compare EER and ROC-AUC with the paper, then evaluate additional datasets
+and benchmarks selected later. German/English and cross-language evaluation are possible
+directions, depending on the selected data. Write a report covering methods, results,
 problems, and limitations. Success means an executed, reproducible baseline with measured results.
+If time allows after the pipeline is complete, add an audio-upload interface with visual
+explanations of phoneme scores and their contributions. This interface is optional.
+
+`practical-work` is the main branch for Stage A and contains only practical work.
+Keep its README concise. The `main` README preserves detailed project/setup information.
+Future thesis work will use a separate `master-thesis` branch based on the practical work.
 
 ## Stage B: Master's Thesis
 
@@ -47,7 +54,7 @@ do not rewrite it for trivial edits. Technical notes elsewhere are evidence, not
 | 3. Dataset preparation | Not Started | User confirms ZH-Famous access; Famous Figures approval is pending (expected 2-3 days). Obtain download approval, map audio to Xue's original enrollment/test protocols, and verify files, labels, identities, audio integrity, and leakage. |
 | 4. PVP reproduction | Not Started | Run a small end-to-end check, then one full benchmark with the selected backbone; save trial scores; evaluate EER/ROC-AUC and compare with the paper. |
 | 5. Reproducible experiments | Not Started | W&B setup is available; the configurable experiment runner, complete scientific run records, and replay verification still need implementation. Basic provenance is required from the first experiment. |
-| 6. German/English evaluation | Not Started | Establish suitable bilingual data and same-speaker splits; run same-language and cross-language enrollment/evaluation; analyze differences and failure cases. Target: February 2027. |
+| 6. Additional evaluations and report | Not Started | Select suitable additional datasets and benchmarks later; document their protocols and keep these results separate from reproduction. German/English and cross-language evaluation remain possible directions. Write the practical work report. If time allows after the pipeline is complete, add a visual explanation interface. Target: February 2027. |
 | 7. Master's Thesis | Not Started | With supervisor approval, define contribution; extend baseline; run experiments and ablations; evaluate and write thesis. March-July 2027; implementation not authorized. |
 
 Phase 1 review was followed by authorization to continue on 2026-11-03. Current task:
