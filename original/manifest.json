@@ -1,0 +1,146 @@
+{
+  "repository": "https://github.com/JunXue-tech/PVP",
+  "commit": "1eed3f43309e6728583a5e43595e68121472b2ca",
+  "retrieved_on": "2026-11-03",
+  "snapshot": "PVP",
+  "files": [
+    {
+      "path": ".gitignore",
+      "git_blob_sha1": "70fa7c9e2bd6e18f7e4a13c3689d9dfaa089aeb7",
+      "sha256": "aedce8e6950adf88ae6a05eb9b88279cb770ff2a1874b3b93d1f04302f2c099b",
+      "size_bytes": 125
+    },
+    {
+      "path": "1_backbone_baseline.py",
+      "git_blob_sha1": "a71c6b0193e0c92fc9fed8ff8071bb15eccefdb4",
+      "sha256": "f60d10a4ffe82413aeb2fb353470ecab18c2ad41d4840febb1854a1d143ffa0c",
+      "size_bytes": 4899
+    },
+    {
+      "path": "2_PVP.py",
+      "git_blob_sha1": "24485417d99654e29dbe2f4b745d6618a7cda1ea",
+      "sha256": "1fa8303ce6a36a6f943c0c177958d847826fa0eae641a831ec1e6025127554dc",
+      "size_bytes": 7092
+    },
+    {
+      "path": "3_motivation_exp.py",
+      "git_blob_sha1": "1e3e133639ca499da64292f9114a2653ffea9c4f",
+      "sha256": "30a3d5d6fe285716fb1bba8a949ac016a361bf2edef51466fbfb62f60a42870f",
+      "size_bytes": 6036
+    },
+    {
+      "path": "4_ablation_GMM.py",
+      "git_blob_sha1": "2e36b69c88d7b6c9d53fd503b9ff0fb562ddf810",
+      "sha256": "5c041f50f7dea72576cd6576471852cf9615a1811db609954778ff249cdd1b73",
+      "size_bytes": 10047
+    },
+    {
+      "path": "4_ablation_phoneme.py",
+      "git_blob_sha1": "002edc1741ee545702f67382240e814f3269b84e",
+      "sha256": "77d3a1a0058dc3eb42302516f7ac27f74dfff4131c5a2628a37001368cd767b3",
+      "size_bytes": 10845
+    },
+    {
+      "path": "4_ablation_top_k.py",
+      "git_blob_sha1": "eb366bf1f8292ba50f7255add0422988d6a5f20f",
+      "sha256": "2471bd2ba48d1b25e77be2a59158a733d78de092b574c101dcaf1944f031f4a4",
+      "size_bytes": 9006
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha1": "3d9ee8eed53af1da5cae1b5ae33ed689209659fd",
+      "sha256": "caba996e3b4d8497cbdeaa048903cd6656c7ccc716e138b56b9efe338e4a75ab",
+      "size_bytes": 5899
+    },
+    {
+      "path": "analyzer.py",
+      "git_blob_sha1": "3b5427d3c20bf20566b990ab95f1d95b5ea448bd",
+      "sha256": "02cfe762e917567ebe0f453531ea74a2092eaa947b4b2a8921a9a4a6ad379cc6",
+      "size_bytes": 14113
+    },
+    {
+      "path": "backbones/hubert_xlarge.py",
+      "git_blob_sha1": "5667e6387cd90d65c8748d93da4b073a696602c6",
+      "sha256": "e10a99ac5f44bfd1e5cb9b858171e1dd30633376c777fc35f8f3ad5873aa459f",
+      "size_bytes": 1922
+    },
+    {
+      "path": "backbones/mms.py",
+      "git_blob_sha1": "186ace1c12ac231b2b1068e90e8b61c36a4aa327",
+      "sha256": "0ec5feebffcca4b171aad576c480ee7c552e3b6c57707541f0a675ca9b8bbfdc",
+      "size_bytes": 4833
+    },
+    {
+      "path": "backbones/wav2vec_large.py",
+      "git_blob_sha1": "2061258cc8e6521aaa05577876040a526af7c90c",
+      "sha256": "2abd0522c1ddcf923ab72424601ac957fefc524968c7dce509a2b967a0a14613",
+      "size_bytes": 2596
+    },
+    {
+      "path": "backbones/wav2vec_small.py",
+      "git_blob_sha1": "415f1d319ba58e59f5131fadad448a23dab6da81",
+      "sha256": "a67235ad8175b4f5dd25bc34f035b3b6a29d4542c584f7c6e26abc1c4cd59b8a",
+      "size_bytes": 2198
+    },
+    {
+      "path": "backbones/xlsr_1b.py",
+      "git_blob_sha1": "80adf7c3b44b6a2f720a529cf5c30902fb6fc2e4",
+      "sha256": "4a1f3f2ecbe4c6b16d1a2acc7e7e75ac09ed6e623319443d16293a6083c59100",
+      "size_bytes": 2593
+    },
+    {
+      "path": "data.py",
+      "git_blob_sha1": "994f4bb15fb737384228dc4bbd4381a2991fd0b5",
+      "sha256": "c92bb79b01d43d4e4146bd1641b6b99e7464767721af8dfd1e7685eae84eff01",
+      "size_bytes": 6683
+    },
+    {
+      "path": "fig/arch.png",
+      "git_blob_sha1": "3e0dc6647584372d8508f466e9efcb383fc80f92",
+      "sha256": "5b58fc007f32a140dcb459be3b099f24d32bf1f85bc5b2ae41e035a515f26369",
+      "size_bytes": 438161
+    },
+    {
+      "path": "install.sh",
+      "git_blob_sha1": "366e1f825c1bb5fa8be70c5ad1063956ec2d2d89",
+      "sha256": "5aa558205475eb07140cc33e53e57e2e65c9e2e73dbafcb6012b464e8d3fa4e5",
+      "size_bytes": 790
+    },
+    {
+      "path": "protocols/famous_figures_enroll.csv",
+      "git_blob_sha1": "8d913e62c75314bacded5aefa05f1f8301f82608",
+      "sha256": "ef383f038949b84bebe5ba4b0d74cd2eeb199370d4742fef4f33cbcd58a771c8",
+      "size_bytes": 52160
+    },
+    {
+      "path": "protocols/famous_figures_test.csv",
+      "git_blob_sha1": "dc5ed71e5a591ff79f33ad854eb9e4342054bf33",
+      "sha256": "0e92a51b74748008e15cee3f1a64d343539fc82c30cbac5144e9f23af800205c",
+      "size_bytes": 22620709
+    },
+    {
+      "path": "protocols/zh_famous_enroll.csv",
+      "git_blob_sha1": "241d08383c5811b04ecca99bdd953c42ddb95a62",
+      "sha256": "cd272fae9b8c5866c11b28384f8eb0a9874d348c84d34cda11f70654f31e6fc8",
+      "size_bytes": 25289
+    },
+    {
+      "path": "protocols/zh_famous_test.csv",
+      "git_blob_sha1": "aca930bbad480baf9628cad3c37f8b4c9737fbe7",
+      "sha256": "0f4be08a52bc4e06a2a309c6d1c765cef9926a6fa8452a6c17014eba2651be9c",
+      "size_bytes": 5938307
+    },
+    {
+      "path": "utils.py",
+      "git_blob_sha1": "b4a6ca9297e2b6a03aee13ad12a48b0550eadc41",
+      "sha256": "8aeae2dd418f8cce03a7612a6379ce3ff112f8c3d8c768d2a36332cc154d09d0",
+      "size_bytes": 1860
+    },
+    {
+      "path": "vocab.json",
+      "git_blob_sha1": "3569e71c84b76d2a47894adb6645e1eef84e6f7a",
+      "sha256": "42a1323c4f31dd2e1a41d205efa46e03398557d6843c55b2994e2888b55924af",
+      "size_bytes": 2964
+    }
+  ]
+}
