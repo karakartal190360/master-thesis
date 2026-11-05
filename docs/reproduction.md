@@ -165,6 +165,42 @@ and silently skip these trials. Our runner must keep the full protocol, record t
 as failed trials with reason `missing_from_release`, and report metrics with the actual
 trial count. Do not edit the protocol files.
 
+### ZH-Famous audio extraction (2026-11-05)
+
+`scripts/extract_parquet_audio.py` wrote each Parquet audio entry unchanged to
+`data/zh-famous/wav/<path>` (flat; no re-encoding, no resampling) and decoded every file
+once with soundfile to check channels, frames and duration against `duration_sec`
+(tolerance 1 ms). `scientific_result=false`.
+
+| Item | Result |
+| --- | --- |
+| Files | 204,935 WAV, mono, PCM 16-bit; 66.25 GB; 412.5 h |
+| Checks | 0 failures: all decode, mono, non-empty, duration matches |
+| Bit identity | written bytes equal Parquet bytes; SHA-256 per file in the manifest |
+| Evidence | `results/datasets/zh-famous-extraction.json`, `results/datasets/zh-famous-wav-manifest.csv` |
+
+Stored sample rates differ by system. The card's 16 kHz is the `datasets` decoding
+rate, not the storage rate:
+
+| Source | Sample rate | Files |
+| --- | ---: | ---: |
+| Bona fide | 16,000 | 34,014 |
+| LLaSA | 16,000 | 34,513 |
+| VOXCPM | 16,000 | 34,156 |
+| F5 | 24,000 | 34,069 |
+| indextts | 22,050 | 34,049 |
+| OpenAudio-S1-mini | 44,100 | 34,134 |
+
+Upstream loads all audio with `librosa.load(path, sr=16000)` (`analyzer.py:57`,
+`2_PVP.py:40`), so files are resampled to 16 kHz at load time. Keep native rates on disk
+to match this behaviour. Resampler: librosa 0.10.2.post1 default `res_type="soxr_hq"`,
+soxr 1.1.0; the authors' librosa version, and therefore their resampler, is not recorded
+upstream. Sample rate is perfectly tied to the source system for three spoof systems;
+note this as a dataset property before interpreting per-system results.
+
+Runtime layout: upstream reads `./zh_famous/wav` relative to its working directory;
+a link to `data/zh-famous/wav` is still needed before the first run.
+
 The shipped CSV header is `Speaker,AudioName,Source,Label`, although the upstream README
 documents `speaker,path,source,label`. The main script skips the header and assigns its
 own lowercase column names by position. Preserve column order; do not rename source files.
