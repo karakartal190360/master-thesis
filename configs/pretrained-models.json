@@ -1,6 +1,6 @@
 {
   "inspected_on": "2026-11-04",
-  "status": "Downloaded and file integrity verified on WSL on 2026-11-04; model loading pending",
+  "status": "Downloaded and file integrity verified on WSL on 2026-11-04; MMS converted losslessly and all three models loaded offline on CUDA on 2026-11-05",
   "models": [
     {
       "repository": "nii-yamagishilab/mms-300m-anti-deepfake",

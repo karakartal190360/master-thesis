@@ -25,9 +25,9 @@ thesis work will continue in a separate `master-thesis` branch based on this wor
 
 ## Current status
 
-CUDA software checks and W&B setup pass. The pretrained models are downloaded.
-Model loading checks and pipeline implementation remain pending. Dataset licenses
-remain under review. No reproduction results exist yet.
+CUDA software checks and W&B setup pass. The three pretrained models are downloaded
+and run together on the GPU through the original code. Pipeline implementation
+remains pending. Dataset licenses remain under review. No reproduction results exist yet.
 
 See the [setup instructions](docs/environment.md),
 [reproduction notes](docs/reproduction.md), and
