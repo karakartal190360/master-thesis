@@ -1,0 +1,2 @@
+# Parquet reader for Hugging Face dataset releases; newest version with Python 3.9 Linux wheels.
+pyarrow==21.0.0
