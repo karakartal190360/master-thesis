@@ -1,10 +1,12 @@
 # Environment setup
 
-Status on 2026-11-04: the macOS development environment passes offline checks with
-the CPU thread limits below. The home server is now reachable over SSH, and Ubuntu
+Status on 2026-11-05: the macOS development environment passes offline checks with
+the CPU thread limits below. The home server is reachable over SSH, and Ubuntu
 WSL2 can see the NVIDIA GPU. The Linux installation, pinned fairseq build, and
 offline CUDA checks pass. W&B logging is verified in a private project; see
-[tracking setup](tracking.md). Pretrained model loading remains unverified. Phase status lives in
+[tracking setup](tracking.md). The three pinned models load offline through unchanged
+upstream code and run together on the GPU; see the
+[model loading check](#model-loading-and-inference-check-2026-11-05). Phase status lives in
 [AGENTS.md](../AGENTS.md).
 
 ## Machines and responsibilities
@@ -90,10 +92,11 @@ outside `original/PVP/`.
   CUDA visibility, and a PyTorch operation on the desktop passed on 2026-11-04.
   Package, OS, driver, and PyTorch/CUDA build versions were saved.
 - Import checks ran separately from model-loading scripts, with hub access offline.
-- After weight-download approval, verify checkpoint loading, 16 kHz audio decoding,
-  CTC offset extraction, and backbone frame timing on a small approved sample.
-- Confirm CPU/NumPy conversion of ECAPA embeddings and memory use in the actual
-  selected library versions. Verify that scoring can account for every trial.
+- Checkpoint loading, CTC/MMS frame-count agreement, ECAPA embedding extraction, and
+  GPU memory up to 30 s passed on 2026-11-05 with synthetic noise (section below).
+- Still to verify on a small approved dataset sample: 16 kHz audio decoding, CTC phoneme
+  offsets on real speech, peak memory for the longest clips, and that scoring accounts
+  for every trial.
 
 Dataset access, storage estimates, protocol schemas, and paper/code discrepancies
 are recorded in [reproduction.md](reproduction.md). No dataset audio or detection
@@ -263,8 +266,8 @@ host, SSH credentials, or Mac connection is needed.
 
 The Linux script completed successfully on the desktop on 2026-11-04. A future
 build/import/CUDA failure must be inspected and documented before changing versions.
-Passing this software check still leaves pretrained model loading and peak inference
-memory unverified; those require approved weights. Phase 2 remains In Progress.
+This software check alone does not load pretrained models; the separate
+[model loading check](#model-loading-and-inference-check-2026-11-05) does.
 
 Verified server software: Python 3.9.25; torch/torchaudio 2.6.0; PyTorch CUDA build
 12.4; SpeechBrain 1.0.2; fairseq commit `862efab86f649c04ea31545ce28d13c59560113d`;
@@ -330,11 +333,101 @@ To repeat or resume the same downloads from the WSL project directory:
 
 Weights and Hugging Face download metadata stay in ignored server directories.
 No model files were copied to the Mac or uploaded to W&B. Download integrity is
-verified; model loading and CUDA inference remain unverified.
+verified; loading and CUDA inference are verified in the section below.
 
 The inspected MMS repository currently provides `model.safetensors`, while the PVP
 wrapper expects a PyTorch state dictionary at `pretrained_models/mms_300m.ckpt`.
-Do not rename the safetensors file to `.ckpt`. Before loading, inspect the tensor keys
-and use a documented lossless format conversion if they match the expected model.
-Keep the original downloaded file and its hash. No model tensor or detector change
-is authorized by a packaging-format conversion.
+Do not rename the safetensors file to `.ckpt`. The keys were inspected and matched, and a
+documented lossless conversion was done on 2026-11-05 (section below). The original
+downloaded file and its hash are kept. No model tensor or detector change is
+authorized by a packaging-format conversion.
+
+## Model loading and inference check (2026-11-05)
+
+Status: passed on the WSL server. This is a setup check (`scientific_result=false`),
+run from a working copy with uncommitted changes. It used synthetic noise, not speech,
+so it gives no detection or phoneme-quality evidence. These steps were done directly in
+the WSL project; the Mac copy does not have them until transferred deliberately.
+
+**1. MMS key inspection.** `model.safetensors` holds 431 float32 tensors: 429 under
+`m_ssl.model.` (backbone) and `proj_fc.weight` [2, 1024] / `proj_fc.bias` [2] (output
+layer). An empty fairseq `Wav2Vec2Model` built from upstream `mms_configs` expects
+exactly the same 429 names and shapes: none missing, none extra, no shape mismatch.
+So the file was made for this upstream wrapper; only its container format differs.
+
+**2. Lossless MMS conversion.** [convert_mms.py](../scripts/convert_mms.py) checks the
+pinned source hash, saves the unchanged tensors with `torch.save` as
+`models/mms-300m-anti-deepfake/mms_300m.ckpt`, reloads it with `torch.load` (as upstream
+does), and compares every tensor's name, dtype, shape and values. All 431 are equal.
+The original safetensors file is kept. Report: `results/environment/mms-conversion.json`.
+
+| File | SHA-256 | Bytes |
+| --- | --- | --- |
+| `model.safetensors` (downloaded source) | `9bd5d9785bf72f91dfca8508651354946c4b307921cb358505e1b94035102224` | 1,269,622,944 |
+| `mms_300m.ckpt` (converted) | `c4dc55e229d974961dc59a0865d9f5af04b24a7a03aee5da94c55f1675cd2b10` | 1,269,711,239 |
+
+The tensor-by-tensor comparison is the proof of correctness. The `.ckpt` hash identifies
+this file only: another torch version may write different bytes for identical tensors.
+
+**3. Local runtime layout.** Upstream finds models by names relative to its working
+directory. [link_pretrained.py](../scripts/link_pretrained.py) creates symlinks in a
+chosen working directory, outside `original/PVP/`, so the unchanged code uses the
+pinned local files:
+
+| Upstream lookup | Link target in `models/` | Why this name works |
+| --- | --- | --- |
+| `pretrained_models/mms_300m.ckpt` (`backbones/mms.py:67,132`) | converted MMS file | Direct `torch.load` path. |
+| `facebook/wav2vec2-xlsr-53-espeak-cv-ft` (`analyzer.py:19`) | CTC model directory | Transformers loads an existing local directory with that name before trying the Hub. |
+| `speechbrain/spkrec-ecapa-voxceleb` (`2_PVP.py:25`) | ECAPA directory | SpeechBrain 1.0.2 treats the source as local only if that directory exists. Otherwise it always contacts the Hub (`allow_updates=True`), even when `savedir` already holds the files. Found when the first offline run failed. |
+| `pretrained_models/spkrec-ecapa-voxceleb/*` (`savedir`) | one link per ECAPA file | SpeechBrain writes into `savedir` (it added `custom.py` and `label_encoder.ckpt` links). Per-file links keep these writes out of `models/`. |
+| `vocab.json` (`analyzer.py:114`) | `original/PVP/vocab.json` | Upstream silently uses an empty category map if this file is missing. |
+
+The script refuses to replace any existing path that is not the expected link.
+
+**4. Loading and inference.** [check_models.py](../scripts/check_models.py) forces
+`HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` with an empty private `HF_HOME`, then uses
+upstream's own code: it imports `2_PVP.py` (ECAPA at import) and creates
+`UniversalPhonemeAnalyzer(device=DEVICE, feat_model_name=BACKBONE)` as in `2_PVP.py:112`
+(`MMS`, `cuda:0`). It runs the same steps as `get_phoneme_features_from_file` and
+`_extract_embedding` directly, so errors are raised rather than printed and skipped,
+then calls the upstream function on the same file. Input: seeded Gaussian noise
+(seed 0, 16 kHz mono) of 4, 15 and 30 seconds.
+
+```bash
+.venv/bin/python scripts/check_models.py
+```
+
+| Result | Value |
+| --- | --- |
+| Hub access | None. Private cache afterwards contains only `hub/version.txt`, an empty-cache marker. |
+| Loading time (all three models) | 6-8 s |
+| Weights equal to files, tensor by tensor | MMS backbone 429/429; CTC 424/424 (Transformers renames `weight_g`/`weight_v` to torch `parametrizations.weight.original0/1`; compared after mapping); ECAPA embedding model 231/231 |
+| GPU memory allocated after loading | ECAPA 86 MiB; all three models 2,502 MiB |
+| Frame counts, CTC versus MMS | Equal at every length: 199, 749, 1,499 frames (20 ms per frame). Upstream applies CTC offsets directly to MMS frames, so this is required. |
+| CTC output size | 392 tokens per frame |
+| ECAPA embedding | 192 values |
+| Decoded phonemes on noise | 0 (expected; not a quality test) |
+
+| Audio length | Peak allocated | Peak reserved | Inference time |
+| --- | --- | --- | --- |
+| 4 s | 2,635 MiB | 2,696 MiB | 0.8-1.3 s (first call includes CUDA warm-up) |
+| 15 s | 2,929 MiB | 3,122 MiB | 0.08 s |
+| 30 s | 3,311 MiB | 3,972 MiB | 0.19 s |
+
+GPU: RTX 4070 Ti SUPER, driver 610.88, 16,376 MiB. Packages: torch 2.6.0 (CUDA 12.4),
+fairseq `862efab`, Transformers 4.46.3, SpeechBrain 1.0.2, huggingface-hub 0.25.2,
+safetensors 0.7.0. Report: `results/environment/model-check.json`, which records the
+command, Git commit and dirty state, and the SHA-256 of `check_models.py` and
+`link_pretrained.py`.
+
+**Interpretation and limits.** About 2.5 GB is the fixed weight cost; activation memory
+grows with clip length. Up to 30 s, peak use is far below 16 GB. Attention memory grows
+roughly quadratically with length, so check the longest clip in the selected dataset
+before a full run. No cropping or precision change was used or is planned. The ECAPA
+normalization and classifier files were loaded but not compared tensor by tensor; the
+classifier is not used for embeddings. Phoneme decoding, offsets and scores on real
+speech remain untested until approved dataset audio is available.
+
+Two problems occurred and were fixed in our scripts, not in upstream: WSL keeps
+`nvidia-smi` in `/usr/lib/wsl/lib/` outside `PATH` (same fallback as
+`setup_pvp_linux.sh`), and the SpeechBrain Hub lookup described above.

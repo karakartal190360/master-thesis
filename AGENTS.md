@@ -50,16 +50,17 @@ do not rewrite it for trivial edits. Technical notes elsewhere are evidence, not
 | Phase | Status | Work and completion evidence |
 | --- | --- | --- |
 | 1. Research and repository setup | Completed | Paper read; upstream inspected and pinned; pipeline, files, dependencies, protocol counts, and discrepancies documented; instructions and initial structure created. No experiment executed. |
-| 2. Environment setup | In Progress | Linux PVP/CUDA checks pass. W&B 0.26.1 was added without changing the existing 95 packages; offline and online non-scientific tracking checks pass in the private academic project. Mac checks pass with CPU thread limits. User-approved downloads of the three pinned models completed on 2026-11-04: 14 files, 2.62 GB, sizes and available published weight hashes verified. Pretrained model loading, MMS format conversion, and inference memory checks remain pending. |
+| 2. Environment setup | Completed | Linux PVP/CUDA checks pass. W&B 0.26.1 was added without changing the existing 95 packages; offline and online non-scientific tracking checks pass in the private academic project. Mac checks pass with CPU thread limits. User-approved downloads of the three pinned models completed on 2026-11-04: 14 files, 2.62 GB, sizes and available published weight hashes verified. On 2026-11-05: MMS keys matched upstream and were converted losslessly to `mms_300m.ckpt`; all three models load offline through unchanged upstream code with weights equal to their files; CTC/MMS frame counts agree; peak GPU memory 3.3 GB allocated at 30 s synthetic input (setup check, `scientific_result=false`). |
 | 3. Dataset preparation | Not Started | User confirms ZH-Famous access; Famous Figures approval is pending (expected 2-3 days). Obtain download approval, map audio to Xue's original enrollment/test protocols, and verify files, labels, identities, audio integrity, and leakage. |
 | 4. PVP reproduction | Not Started | Run a small end-to-end check, then one full benchmark with the selected backbone; save trial scores; evaluate EER/ROC-AUC and compare with the paper. |
 | 5. Reproducible experiments | Not Started | W&B setup is available; the configurable experiment runner, complete scientific run records, and replay verification still need implementation. Basic provenance is required from the first experiment. |
 | 6. Additional evaluations and report | Not Started | Select suitable additional datasets and benchmarks later; document their protocols and keep these results separate from reproduction. German/English and cross-language evaluation remain possible directions. Write the practical work report. If time allows after the pipeline is complete, add a visual explanation interface. Target: February 2027. |
 | 7. Master's Thesis | Not Started | With supervisor approval, define contribution; extend baseline; run experiments and ablations; evaluate and write thesis. March-July 2027; implementation not authorized. |
 
-Phase 1 review was followed by authorization to continue on 2026-11-03. Current task:
-Phase 2 environment setup, starting from upstream pins. Software checks and model downloads
-are verified; pretrained model loading and inference memory checks remain pending.
+Phase 1 review was followed by authorization to continue on 2026-11-03. Phase 2 was
+completed on 2026-11-05: software, model downloads, MMS conversion, offline model loading,
+and GPU inference memory on synthetic input are verified. Next: Phase 3 dataset preparation,
+which needs Famous Figures approval and user approval for dataset downloads.
 The user made the home server reachable on 2026-11-04. Use the configured SSH alias
 `homeserver`; it opens a Windows shell. Run Linux commands through `wsl.exe -d Ubuntu`.
 The project copy is `/home/mut/projects/master-thesis` in WSL, on `practical-work`,
@@ -71,7 +72,8 @@ final selection depends on access. Resolve/document enrollment and scoring discr
 before treating a run as a comparison with published results. No reproduced results exist yet.
 
 Known constraints: both benchmarks are gated; dataset audio is absent; pinned model files
-are downloaded under the server's ignored `models/` directory but not yet loaded; upstream
+are in the server's ignored `models/` directory and reach upstream only through the
+symlinked working directory from `scripts/link_pretrained.py`; upstream
 has no full dependency lock; speaker-score settings and enrollment counts differ from the paper.
 See `docs/reproduction.md` and `docs/environment.md` for evidence and unresolved details.
 The first baseline must use Xue's official datasets and supplied enrollment/test protocols.
@@ -88,9 +90,9 @@ W&B Academic is selected: entity `umuttanriverdi`, private project
 | `original/PVP/` | Unchanged upstream snapshot; never mix our edits with it. |
 | `original/UPSTREAM.md`, `original/manifest.json` | Source commit and file provenance. |
 | `docs/` | Research, environment, reproduction, and discrepancy notes. |
-| `requirements.txt`, `requirements/` | Direct macOS development requirements and separate Mac/Linux locks. Linux software checks pass; pretrained model validation remains pending. |
+| `requirements.txt`, `requirements/` | Direct macOS development requirements and separate Mac/Linux locks. Linux software and pretrained model checks pass. |
 | `src/` | Future reusable Python code. |
-| `scripts/` | Environment setup/checks now; experiment entry points when reproduction begins. |
+| `scripts/` | Environment setup/checks, MMS conversion, and the upstream runtime-link layout; experiment entry points when reproduction begins. |
 | `configs/` | Pinned model download plan and W&B destination; experiment settings when needed. |
 | `notebooks/` | Future exploration, figures, and result analysis. |
 | `data/` | Future local datasets and protocols; keep raw audio out of Git. |
@@ -146,8 +148,8 @@ in Git or configuration files. These rules are accepted requirements for the fut
   The local SciPy 1.7.3 exception and runtime evidence are documented in `docs/environment.md`.
 - Desktop RTX 4070 Ti SUPER, 16 GB VRAM: official experiments on Ubuntu under WSL2,
   acting as a private GPU server. SSH/WSL access, driver 610.88, PyTorch CUDA 12.4,
-  the pinned fairseq build, and PVP dependency imports are verified. Pretrained model
-  loading and inference memory remain unverified.
+  the pinned fairseq build, and PVP dependency imports are verified. The three pinned
+  models load offline and run together; peak memory was 3.3 GB at 30 s synthetic input.
 - Keep reusable paths portable and configurable. Do not change the algorithm for Apple Silicon.
 - Phase 1 installed no environment. Phase 2 is now authorized; upstream pins, tested
   environments, and compatibility findings are recorded in `docs/environment.md`.
@@ -165,7 +167,10 @@ in Git or configuration files. These rules are accepted requirements for the fut
 4. Report changes, actual checks, limitations, and the next concrete step. Update progress
    when a milestone, decision, or blocker changes.
 
-Work one major phase at a time. Phase 2 is authorized; report its actual verification status
-before starting dataset preparation. Do not download large datasets
+Commit messages: one line of 5-10 words in clear B2 English. No em dashes.
+No AI signature or trailer, such as `Co-Authored-By` or "Generated with" lines.
+
+Work one major phase at a time. Phase 2 is complete; report its verification status to the
+user and get confirmation before starting dataset preparation. Do not download large datasets
 or model weights without approval. Do not push to GitHub without approval. If a required
 resource is unavailable, report the blocker; do not replace it with a different methodology.
