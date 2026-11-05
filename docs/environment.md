@@ -281,6 +281,16 @@ Offline logging and an online artifact upload/download check also passed. These
 are setup checks, not detector experiments. The Linux setup script now installs
 this tracking extension too. W&B authentication is separate from package installation.
 
+pyarrow 21.0.0 was added on 2026-11-05 to read the Parquet dataset releases
+(ZH-Famous, Famous Figures). It is a separate hash-locked extension:
+`requirements/data.in` → `requirements/data-linux-py39.lock`, compiled with both
+existing locks as constraints and `--exclude-newer 2026-11-04`. 21.0.0 is the newest
+release with Python 3.9 Linux wheels; it has no required dependencies. The install
+added only `pyarrow` and preserved all 107 existing package versions; `uv pip check`
+passes. NumPy 1.21.2 interop and reading the ZH-Famous shard schema work. All five
+environment checks passed again (`results/environment/linux-after-pyarrow.json`).
+The Linux setup script installs this extension after the tracking one. Mac: not installed.
+
 The server's `results/environment/` files were also retrieved to the Mac under
 `results/environment/homeserver/`. These ignored artifacts contain the JSON report,
 installed package list, exact fairseq commit, driver report, uv version, and setup log.

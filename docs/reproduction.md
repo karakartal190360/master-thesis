@@ -117,6 +117,54 @@ No audio was downloaded.
 Dataset page sizes are storage indicators, not verified download/extracted disk sizes.
 Do not accept access terms or download data on the user's behalf without authorization.
 
+### ZH-Famous download record (2026-11-05)
+
+User-approved download on the WSL server; `scientific_result=false` (data acquisition only).
+
+| Item | Value |
+| --- | --- |
+| Repository | `PVP-ADD/ZH-Famous` (dataset), MIT licence, gated with automatic approval |
+| Revision | `115a2a36297c734e275a5b7e8e43172256a12914` (last modified 2026-01-20) |
+| Files | 23 Parquet shards `data/train-000NN-of-00023.parquet`, `README.md`, `.gitattributes` |
+| Size | 64,337,515,426 bytes |
+| Location | `data/zh-famous/` on the server (ignored by Git) |
+| Command | `huggingface-cli download PVP-ADD/ZH-Famous --repo-type dataset --revision <revision> --local-dir data/zh-famous` (huggingface_hub 0.25.2) |
+| Verification | `scripts/verify_dataset_download.py`: 25/25 files match Hub sizes; all 23 shards match published SHA-256. Report: `results/datasets/zh-famous-download.json` |
+
+Dataset card schema: `file_name` (audio, 16 kHz), `label`, `person`, `method`,
+`duration_sec`, `transcription`; one `train` split with 204,935 rows.
+
+Shard schema confirmed with pyarrow 21.0.0: `file_name` is `struct<bytes: binary, path: string>`
+(encoded audio plus original path, e.g. `1.wav`); shard 0 has 8,911 rows in 90 row groups.
+
+### ZH-Famous protocol mapping check (2026-11-05)
+
+`scripts/check_dataset_protocols.py` compares Parquet metadata (path, label, person, method;
+audio not decoded) with the pinned upstream protocols. Protocol keys are mapped with
+the upstream rule `<key>.wav` in one flat folder (`2_PVP.py:119-141`).
+Report: `results/datasets/zh-famous-protocol-check.json`; `scientific_result=false`.
+
+| Check | Result |
+| --- | --- |
+| Dataset rows / unique paths | 204,935 / 204,935; no duplicate paths, so the flat `wav/` layout is safe |
+| Protocol rows / unique keys | 204,944 / 204,944 (1,023 enrollment + 203,921 test) |
+| Enrollment/test overlap | none |
+| Dataset files not in protocols | 0 |
+| Speaker (`Speaker` vs `person`) | 0 mismatches |
+| Label | all `bonafide` → `Real` (34,014), all `spoof` → `Fake` (170,921); no conflicts |
+| Source vs `method` | identical names for all five spoof systems; bona fide empty in both |
+| Protocol rows missing from release | **9**, all test spoof from LLaSA |
+
+Missing rows: HuaYu `95041`, `95093`, `95100`, `95135`, `95169`, `95197`, `95379`, `95398`;
+QiangdongLiu `109001`. All enrollment and bona fide test rows are present. The missing
+rows are 9 of 170,930 spoof test trials (0.005%). Whether the authors' published run
+included them is unknown.
+
+Consequence: unchanged upstream `2_PVP.py:143-147` would catch the file error, print it,
+and silently skip these trials. Our runner must keep the full protocol, record these 9
+as failed trials with reason `missing_from_release`, and report metrics with the actual
+trial count. Do not edit the protocol files.
+
 The shipped CSV header is `Speaker,AudioName,Source,Label`, although the upstream README
 documents `speaker,path,source,label`. The main script skips the header and assigns its
 own lowercase column names by position. Preserve column order; do not rename source files.

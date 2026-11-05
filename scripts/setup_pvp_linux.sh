@@ -50,6 +50,7 @@ git -C .cache/fairseq fetch --depth 1 origin "$FAIRSEQ_COMMIT"
 git -C .cache/fairseq checkout --detach "$FAIRSEQ_COMMIT"
 uv pip install --python .venv/bin/python --no-build-isolation --no-deps .cache/fairseq
 uv pip install --python .venv/bin/python --require-hashes -r requirements/tracking-linux-py39.lock
+uv pip install --python .venv/bin/python --require-hashes -r requirements/data-linux-py39.lock
 uv pip check --python .venv/bin/python
 
 mkdir -p results/environment
