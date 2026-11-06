@@ -51,7 +51,7 @@ do not rewrite it for trivial edits. Technical notes elsewhere are evidence, not
 | --- | --- | --- |
 | 1. Research and repository setup | Completed | Paper read; upstream inspected and pinned; pipeline, files, dependencies, protocol counts, and discrepancies documented; instructions and initial structure created. No experiment executed. |
 | 2. Environment setup | Completed | Linux PVP/CUDA checks pass. W&B 0.26.1 was added without changing the existing 95 packages; offline and online non-scientific tracking checks pass in the private academic project. Mac checks pass with CPU thread limits. User-approved downloads of the three pinned models completed on 2026-11-04: 14 files, 2.62 GB, sizes and available published weight hashes verified. On 2026-11-05: MMS keys matched upstream and were converted losslessly to `mms_300m.ckpt`; all three models load offline through unchanged upstream code with weights equal to their files; CTC/MMS frame counts agree; peak GPU memory 3.3 GB allocated at 30 s synthetic input (setup check, `scientific_result=false`). |
-| 3. Dataset preparation | In Progress | ZH-Famous downloaded (64.3 GB), hash-verified, mapped to the upstream protocols (9 LLaSA test files missing from the release), and extracted to WAV on 2026-11-05. Famous Figures downloaded (170.4 GB) and hash-verified on 2026-11-06. Remaining: Famous Figures protocol mapping and WAV extraction; audio integrity and leakage checks. |
+| 3. Dataset preparation | In Progress | ZH-Famous downloaded (64.3 GB), hash-verified, mapped to the upstream protocols (9 LLaSA test files missing from the release), and extracted to WAV on 2026-11-05. Famous Figures downloaded (170.4 GB) and hash-verified on 2026-11-06; on the same day all 348,136 protocol rows were mapped one-to-one to release rows with an inferred `_<Source>` suffix rule (release paths repeat across systems) and extracted to WAV under protocol names (179.8 GB; 13,399 bona fide files are stereo, downmixed by upstream on load). Remaining: upstream runtime links for both audio roots; audio integrity and leakage checks. |
 | 4. PVP reproduction | Not Started | Run a small end-to-end check, then one full benchmark with the selected backbone; save trial scores; evaluate EER/ROC-AUC and compare with the paper. |
 | 5. Reproducible experiments | Not Started | W&B setup is available; the configurable experiment runner, complete scientific run records, and replay verification still need implementation. Basic provenance is required from the first experiment. |
 | 6. Additional evaluations and report | Not Started | Select suitable additional datasets and benchmarks later; document their protocols and keep these results separate from reproduction. German/English and cross-language evaluation remain possible directions. Write the practical work report. If time allows after the pipeline is complete, add a visual explanation interface. Target: February 2027. |
@@ -60,7 +60,7 @@ do not rewrite it for trivial edits. Technical notes elsewhere are evidence, not
 Phase 1 review was followed by authorization to continue on 2026-11-03. Phase 2 was
 completed on 2026-11-05: software, model downloads, MMS conversion, offline model loading,
 and GPU inference memory on synthetic input are verified. Phase 3 started with ZH-Famous on 2026-11-05;
-Famous Figures was downloaded and verified on 2026-11-06.
+Famous Figures was downloaded, verified, mapped, and extracted on 2026-11-06.
 The user made the home server reachable on 2026-11-04. Use the configured SSH alias
 `homeserver`; it opens a Windows shell. Run Linux commands through `wsl.exe -d Ubuntu`.
 The project copy is `/home/mut/projects/master-thesis` in WSL, on `practical-work`,
@@ -71,7 +71,7 @@ Candidate first experiment: MMS-300M on ZH-Famous, matching the default upstream
 final selection depends on access. Resolve/document enrollment and scoring discrepancies
 before treating a run as a comparison with published results. No reproduced results exist yet.
 
-Known constraints: both benchmarks are gated; Famous Figures audio is not yet mapped or extracted; pinned model files
+Known constraints: both benchmarks are gated; the Famous Figures mapping relies on an inferred file-name rule; pinned model files
 are in the server's ignored `models/` directory and reach upstream only through the
 symlinked working directory from `scripts/link_pretrained.py`; upstream
 has no full dependency lock; speaker-score settings and enrollment counts differ from the paper.

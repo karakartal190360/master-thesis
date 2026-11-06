@@ -111,7 +111,7 @@ No audio was downloaded.
 | Dataset | Source and current access | Required mapping |
 | --- | --- | --- |
 | ZH-Famous, Mandarin | [PVP-ADD/ZH-Famous](https://huggingface.co/datasets/PVP-ADD/ZH-Famous); gated, requires accepting access conditions; page lists 64.3 GB and Parquet format. | Main script expects files below `zh_famous/wav/`; numeric protocol keys receive `.wav`. Map dataset audio to the exact original IDs; confirm release and schema after access. |
-| Famous Figures / EN-Famous, English | [issf/famousfigures](https://huggingface.co/datasets/issf/famousfigures); gated, requests an affiliation email and manual review (page states 2-3 days); lists 170 GB and Parquet format. | Main script expects `FamousFigure/wav/`; supplied protocol keys already include `.wav`. Exact mapping from the release to author filenames remains unverified. |
+| Famous Figures / EN-Famous, English | [issf/famousfigures](https://huggingface.co/datasets/issf/famousfigures); gated, requests an affiliation email and manual review (page states 2-3 days); lists 170 GB and Parquet format. | Main script expects `FamousFigure/wav/`; supplied protocol keys already include `.wav`. Release paths repeat across systems; mapped one-to-one to protocol keys with an inferred suffix rule (see "Famous Figures protocol mapping check"). |
 | German/English bilingual data | Not selected. | Requires the same speakers across both languages, genuine enrollment, labeled genuine/spoof tests, and controlled splits. Separate Stage A evaluation; no substitute benchmark has been assumed. |
 
 Dataset page sizes are storage indicators, not verified download/extracted disk sizes.
@@ -146,7 +146,7 @@ User-approved download on the WSL server; `scientific_result=false` (data acquis
 
 Dataset card schema: `Audio`, `Label`, `Source`, `Speaker`, `AudioName`; ten speaker
 splits with 348,136 examples in total. This equals the protocol total
-(1,115 enrollment + 347,021 test). Row-level mapping is not yet checked.
+(1,115 enrollment + 347,021 test). Row-level mapping: see the next section.
 
 Download problems, all resolved before the final verification:
 
@@ -163,6 +163,93 @@ no `.incomplete` files remain; files on disk equal the Hub file list; shard numb
 is complete for all 10 speakers; all 555 Parquet footers open with pyarrow 21.0.0 and
 share one schema; row counts equal the card's `num_examples` for every speaker.
 No WSL restart occurred after the final download attempt; data was flushed with `sync`.
+
+### Famous Figures protocol mapping check (2026-11-06)
+
+Shard schema confirmed with pyarrow 21.0.0: `Audio` is `struct<bytes: binary, path: string>`;
+`Label`, `Source`, `Speaker`, `AudioName` are strings; there is no duration column.
+`scripts/check_dataset_protocols.py --dataset famous-figures` reads metadata only (audio not
+decoded). Column names per release are in `scripts/parquet_datasets.py`.
+Report: `results/datasets/famous-figures-protocol-check.json`; `scientific_result=false`.
+
+Matching by path alone, as for ZH-Famous, fails: the release has 348,136 rows but only
+258,204 unique `Audio.path` values (31,613 paths occur 2-8 times), and 89,932 protocol keys
+do not exist as release paths. A flat `wav/` folder named by release path would overwrite files.
+Example: `Anthony_Blinken_00001.wav` is the release path of a bona fide row and of spoof rows
+from other systems. Protocol keys for these rows add the source system to the stem:
+`Anthony_Blinken_00766_-.wav` (bona fide, Source `-`), `..._PARLER.wav`, `..._XTTSV2.wav`.
+
+Matching rule (our inference from the data, not documented upstream or on the card):
+a protocol row matches the release row with the same speaker, the same source, and the path
+equal to the protocol key; if none exists, the key with its final `_<Source>` removed
+(`<stem>_<Source>.wav` → `<stem>.wav`).
+
+| Check | Result |
+| --- | --- |
+| Dataset rows / unique paths | 348,136 / 258,204 |
+| Protocol rows / unique keys | 348,136 / 348,136 (1,115 enrollment + 347,021 test) |
+| Protocol keys absent from release paths | 89,932 |
+| Matched, key equals path | 258,204 |
+| Matched after removing `_<Source>` | 89,932: bona fide 24,776, XTTSV2 24,793, STYLETTS2 21,338, PARLER 15,047, F5TTS 1,243, E2TTS 1,001, FISHSPEECH 1,000, MASKGCT 391, SSRSPEECH 343 |
+| Unmatched / ambiguous protocol rows | 0 / 0 |
+| Release rows matched twice / unused | 0 / 0 (one-to-one) |
+| Enrollment/test overlap | none |
+| Speaker, source | equal by construction of the rule; shard speaker prefix equals `Speaker` for all rows |
+| Label | `bonafide` → `bonafide` 50,266, `spoof` → `spoof` 297,870; no conflicts |
+| `AudioName` | always equals `Audio.path` without `.wav` |
+
+The rule gives an exact one-to-one mapping with no ambiguity, which supports it, but it is
+still an assumption: the authors' local file names and how they created the protocols are
+not published. All 12 source systems (bona fide plus 11 spoof systems) are present. Unlike
+ZH-Famous, no protocol row is missing from this release.
+
+The map from protocol key to shard and row is `results/datasets/famous-figures-protocol-map.csv`
+(columns `file, split, speaker, source, label, shard, row, release_path, rule`); its SHA-256
+is in the report. The extraction names files by protocol key, so unchanged upstream code
+finds them below `FamousFigure/wav/`. Do not edit the protocol files.
+
+### Famous Figures audio extraction (2026-11-06)
+
+`scripts/extract_parquet_audio.py --dataset famous-figures --map <protocol map>` wrote each
+Parquet audio entry unchanged to `data/famous-figures/wav/<protocol key>` (flat; no
+re-encoding, no resampling) and decoded every file once with soundfile 0.12.1 (libsndfile
+1.2.0). There is no duration column, so durations are not cross-checked. Started through a
+hidden Windows `wsl.exe` process (launcher `results/datasets/famous-figures-extract.sh`,
+log `data/famous-figures-extraction.log`), followed by `sync`. Run on an uncommitted
+checkout (`git_dirty=true`, script SHA-256 values in the report); `scientific_result=false`.
+
+| Item | Result |
+| --- | --- |
+| Files | 348,136 WAV (one per protocol row; 0 not in map, 0 name conflicts); 179.78 GB; 761.5 h |
+| Decoding | all files decode and are non-empty |
+| Bit identity | written bytes equal Parquet bytes; after the run, `sha256sum -c` of all files on disk against the manifest passed |
+| Encoding | PCM 16-bit 295,206; 32-bit float 52,930 (COZYVOICE2 all, FISHSPEECH 6,371 of 7,371, SSRSPEECH 2) |
+| Channels | 13,399 stereo files, all bona fide: Barack_Obama 10,430 and Kamala_Harris 2,969 (170 of them in enrollment); all others mono |
+| Report status | `failed` only because of the mono check (13,399 × `channels=2`); no other problem |
+| Evidence | `results/datasets/famous-figures-extraction.json`, `results/datasets/famous-figures-wav-manifest.csv` |
+
+The two channels of every stereo file differ (not duplicated mono). Upstream loads with
+`librosa.load(path, sr=16000)` and the default `mono=True`, which averages the channels before
+resampling. These files are therefore usable by unchanged upstream code; they are a dataset
+property, not failed trials. Keep them unchanged on disk.
+
+Stored sample rates by source system:
+
+| Source | Sample rate | Files |
+| --- | ---: | ---: |
+| Bona fide (`-`) | 16,000 / 22,050 | 27,208 / 23,058 |
+| LLASA, SSRSPEECH | 16,000 | 14,356, 6,747 |
+| COZYVOICE2, E2TTS, F5TTS, MASKGCT, STYLETTS2, XTTSV2 | 24,000 | 46,557, 33,633, 32,590, 20,348, 33,318, 31,924 |
+| FISHSPEECH, PARLER, ZONOS | 44,100 | 7,371, 22,604, 48,422 |
+
+Bona fide rate per speaker: 16 kHz mono for most speakers; 22.05 kHz for Joe_Biden (all),
+JD_Vance (2,003 of 2,821), and the stereo Barack_Obama and Kamala_Harris files. As for
+ZH-Famous, sample rate, channel count and sample format are closely tied to the source
+system, and for some speakers channel count is tied to the label. Upstream's resampling and
+downmixing remove most of this, but note it before interpreting per-system results.
+
+Runtime layout: upstream reads `./FamousFigure/wav` relative to its working directory;
+a link to `data/famous-figures/wav` is still needed before the first run.
 
 ### ZH-Famous download record (2026-11-05)
 
@@ -186,7 +273,7 @@ Shard schema confirmed with pyarrow 21.0.0: `file_name` is `struct<bytes: binary
 
 ### ZH-Famous protocol mapping check (2026-11-05)
 
-`scripts/check_dataset_protocols.py` compares Parquet metadata (path, label, person, method;
+`scripts/check_dataset_protocols.py --dataset zh-famous` compares Parquet metadata (path, label, person, method;
 audio not decoded) with the pinned upstream protocols. Protocol keys are mapped with
 the upstream rule `<key>.wav` in one flat folder (`2_PVP.py:119-141`).
 Report: `results/datasets/zh-famous-protocol-check.json`; `scientific_result=false`.
@@ -211,6 +298,11 @@ Consequence: unchanged upstream `2_PVP.py:143-147` would catch the file error, p
 and silently skip these trials. Our runner must keep the full protocol, record these 9
 as failed trials with reason `missing_from_release`, and report metrics with the actual
 trial count. Do not edit the protocol files.
+
+On 2026-11-06 the scripts were generalized for Famous Figures. The new version
+(`--dataset zh-famous`) reproduced the same counts, label pairs and 9 missing rows, and
+one re-extracted shard (8,911 files) had the same SHA-256 values as the manifest. These were
+scratch runs; the ZH-Famous reports above were not replaced.
 
 ### ZH-Famous audio extraction (2026-11-05)
 
