@@ -117,6 +117,53 @@ No audio was downloaded.
 Dataset page sizes are storage indicators, not verified download/extracted disk sizes.
 Do not accept access terms or download data on the user's behalf without authorization.
 
+### Famous Figures access check (2026-11-06)
+
+The user reported granted access. Confirmed with Hub metadata and HTTP HEAD requests only;
+no Parquet data was downloaded.
+
+| Item | Value |
+| --- | --- |
+| Repository | `issf/famousfigures` (dataset), CC BY 4.0, gated with manual review |
+| Revision | `51f591988c68c6fe0922df621aca4b174c4942cb` (last modified 2025-09-20) |
+| Files | 557 (Parquet shards per speaker, e.g. `data/Anthony_Blinken-00000-of-00032.parquet`, plus `README.md`, `.gitattributes`) |
+| Size | 170,444,698,180 bytes |
+| Access | HEAD on `README.md` and one shard succeeded with the server's token |
+| Server disk | 723 GB free before download |
+
+### Famous Figures download record (2026-11-06)
+
+User-approved download on the WSL server; `scientific_result=false` (data acquisition only).
+
+| Item | Value |
+| --- | --- |
+| Revision | `51f591988c68c6fe0922df621aca4b174c4942cb` |
+| Files | 555 Parquet shards `data/<Speaker>-000NN-of-000MM.parquet` (one card split per speaker), `README.md`, `.gitattributes` |
+| Size | 170,444,698,180 bytes |
+| Location | `data/famous-figures/` on the server (ignored by Git); log `data/famous-figures-download.log` |
+| Command | `huggingface-cli download issf/famousfigures --repo-type dataset --revision <revision> --local-dir data/famous-figures` (huggingface_hub 0.25.2) |
+| Verification | `scripts/verify_dataset_download.py`: 557/557 files match Hub sizes; all 555 shards match published SHA-256. Report: `results/datasets/famous-figures-download.json` |
+
+Dataset card schema: `Audio`, `Label`, `Source`, `Speaker`, `AudioName`; ten speaker
+splits with 348,136 examples in total. This equals the protocol total
+(1,115 enrollment + 347,021 test). Row-level mapping is not yet checked.
+
+Download problems, all resolved before the final verification:
+
+- WSL shut down twice when the Claude session ended (11:05 and 11:20), killing the
+  download. It was then started through a hidden Windows `wsl.exe` process, which keeps WSL running.
+- After an interruption, huggingface_hub 0.25.2 crashed once with `UnboundLocalError`
+  while reading a damaged resume metadata file. The library deletes that file first, so a rerun succeeds.
+- The first verification found 3 shards truncated to 436,207,616 bytes
+  (`Barack_Obama-00110`, `-00112`, `-00114`), written just before the 11:05 shutdown.
+  They were deleted, re-downloaded, and the full verification was repeated.
+
+Additional checks after the final verification (one-off script, not kept):
+no `.incomplete` files remain; files on disk equal the Hub file list; shard numbering
+is complete for all 10 speakers; all 555 Parquet footers open with pyarrow 21.0.0 and
+share one schema; row counts equal the card's `num_examples` for every speaker.
+No WSL restart occurred after the final download attempt; data was flushed with `sync`.
+
 ### ZH-Famous download record (2026-11-05)
 
 User-approved download on the WSL server; `scientific_result=false` (data acquisition only).
