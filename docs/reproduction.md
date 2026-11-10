@@ -574,6 +574,93 @@ representative, and deliberately contains hard cases.
 GPU driver: the run record shows driver 621.14; Phase 2 verified 610.88. The Windows driver
 was updated in between. The full run records its own driver version.
 
+### Full ZH-Famous MMS run (2026-11-10)
+
+Scientific run `20261110T161146Z-a7e7dcab` (`scientific_result=true`), clean checkout at
+`f806ba8`, upstream `1eed3f4`, config [pvp-zh-famous-mms.json](../configs/pvp-zh-famous-mms.json)
+(upstream code settings), full official enrollment and test protocols. W&B run
+[`20261110T161146Z-a7e7dcab`](https://wandb.ai/umuttanriverdi/personalized-speech-deepfake-detection/runs/20261110T161146Z-a7e7dcab)
+with the `reproducibility` artifact; local record `results/runs/20261110T161146Z-a7e7dcab/`
+on the server. Command: `.venv/bin/python scripts/run_pvp.py configs/pvp-zh-famous-mms.json --scientific --wandb online`.
+
+| Item | Result |
+| --- | --- |
+| Environment | WSL2 Ubuntu, RTX 4070 Ti SUPER (driver 621.14), Python 3.9.25, PyTorch CUDA 12.4, cuDNN 9.1, `cudnn.deterministic=False` |
+| Run time | 16:11-19:23 UTC (3 h 12 min); 17.9 test trials/s on average |
+| Enrollment | all 10 speakers (100-118 files each); 70-81 phoneme GMMs, 5-component speaker GMM; no enrollment file without phoneme features |
+| Trials | 203,921: 203,911 scored (32,991 bona fide, 170,920 spoof), 10 failed |
+| Failed | 9 LLaSA files missing from the release (the 9 known from the protocol mapping); `95084.wav` (20 ms LLaSA) `RuntimeError` in ECAPA |
+| Tiers | Level 1 140,007; Level 2 62,559; Level 3 285; `Extract Fail + ASV` 1,060 (1,056 LLaSA, 4 VOXCPM; all spoof) |
+| Peak GPU memory | 3,802 MiB allocated |
+| Ties | 6,199 score values occur more than once (mostly identical DengFan clips); none mixes bona fide and spoof, so the metrics are not affected |
+
+**Our result compared with the paper** (Table 2, MMS-300M with PVP, ZH-Famous; percent):
+
+| Source | EER | ROC-AUC |
+| --- | ---: | ---: |
+| Paper-reported | 11.37 | 94.58 |
+| Our run (upstream code settings) | 12.24 | 93.62 |
+| Difference (ours minus paper) | +0.87 | -0.96 |
+
+Metric: upstream `utils.compute_eer` and `roc_auc_score`, pooled over all scored trials of the
+dataset, higher score = bona fide (as `2_PVP.py:160-176`). The result is close to the paper but
+not equal: EER is 0.87 points higher and AUC 0.96 points lower. This is an approximate
+reproduction, not an exact one. The cause of the gap is not established. Possible causes are the
+documented settings differences (enrollment amount, speaker sigmoid, GMM regularization;
+"Paper/code differences and ambiguities"), the 9 missing release files, an unknown code or
+environment state behind the published table, and non-deterministic GPU kernels. We did not
+tune anything toward the table values.
+
+Per speaker (EER / AUC, percent): DengFan 13.67 / 93.28, HongyiZhou 31.97 / 72.21,
+HuaYu 4.36 / 99.10, JunLei 12.47 / 94.32, MinghongYu 12.12 / 92.72, QiangdongLiu 8.13 / 97.28,
+XiangLuo 3.99 / 98.81, YanMo 10.64 / 96.34, YonghaoLuo 4.64 / 98.47, YunMa 11.36 / 92.45.
+HongyiZhou is a clear outlier; the reason is not investigated yet.
+
+Additional analyses of the same scores (not paper comparisons; the main result above is unchanged):
+
+| Analysis | EER | AUC |
+| --- | ---: | ---: |
+| All bona fide vs F5 only | 8.48 | 97.27 |
+| All bona fide vs LLaSA only | 10.18 | 94.81 |
+| All bona fide vs indextts only | 11.47 | 93.34 |
+| All bona fide vs OpenAudio-S1-mini only | 13.39 | 93.19 |
+| All bona fide vs VOXCPM only | 16.79 | 89.47 |
+| Without the 60 bona fide test copies of enrollment files | 12.26 | 93.61 |
+| 10 failed spoof trials counted as accepted (worst case) | 12.24 | 93.61 |
+
+The enrollment/test copies and the failed trials change the result by at most 0.02 points.
+All 1,060 fallback trials (phoneme score 0.5, fused 0.576-0.600) are spoofs scored far below
+the EER threshold (0.99999), so upstream's fallback rejects them correctly here.
+Replay of the full run has not been done; the smoke-check replay was bit-identical.
+
+### Famous Figures small end-to-end check (2026-11-10)
+
+Setup check, `scientific_result=false` (dirty checkout, subset protocol), config
+[pvp-famous-figures-mms.json](../configs/pvp-famous-figures-mms.json): same upstream code
+settings as ZH-Famous; only protocols, audio root and paper target differ (second benchmark of
+`2_PVP.py:196-200`). Full enrollment (10 speakers, 1,115 files) and a 194-trial test subset
+`results/checks/famous_figures_test_smoke.csv`: the first 8 bona fide and 1 spoof trial per
+speaker and system, plus hard cases from the Phase 3 checks (the three longest files incl. two
+79.5 s files, the two longest stereo files, the three shortest files, two low-level files, one
+clipping file, two copies of enrollment files).
+W&B run [`20261110T193420Z-ec42b331`](https://wandb.ai/umuttanriverdi/personalized-speech-deepfake-detection/runs/20261110T193420Z-ec42b331).
+
+| Item | Result |
+| --- | --- |
+| Enrollment | all 10 speakers (100-215 files); 6-20 s each; 42-51 phoneme GMMs (ZH-Famous: 70-81), 5-component speaker GMM; no enrollment file without phoneme features |
+| Trials | 194: 191 scored, 3 failed |
+| Failed | the three shortest files (10-12 ms; 2 ZONOS, 1 LLASA): no phoneme features, then `RuntimeError` in ECAPA (padding larger than input). Upstream would print and skip them. |
+| Fallbacks | 6 LLASA spoofs `Extract Fail + ASV` (fused 0.58-0.60); all other trials Level 1 |
+| Peak GPU memory | 4,676 MiB allocated, including the 79.5 s files (longest Famous Figures files) |
+| Stereo files | scored normally (upstream downmix on load) |
+| Speed | 15.5 test trials/s; full test protocol (347,021 trials) estimated at about 5.5-6.5 h |
+| Replay | second run `20261110T193658Z-38b6699d` (W&B disabled): `scores.csv` and metrics bit-identical |
+| Standalone evaluation | same metrics as the runner |
+
+The subset EER (6.60%) and AUC (98.45%) are **not** results (small, non-representative subset
+with deliberate hard cases). The full release has 322 files under 25 ms, so a few hundred
+failed trials are expected in the full run; each will be recorded with its reason.
+
 ## Published comparison targets, not our results
 
 Table 2, PDF p. 6 / printed p. 5996; both metrics below are percentages.
@@ -583,7 +670,8 @@ Table 2, PDF p. 6 / printed p. 5996; both metrics below are percentages.
 | Original backbone baseline | 21.13 | 84.11 | 13.97 | 93.99 |
 | With PVP | 11.37 | 94.58 | 7.24 | 96.61 |
 
-No reproduced or German/English evaluation results exist yet. The default code makes
+Our first reproduced result (ZH-Famous, MMS-300M with PVP, upstream code settings) is in
+"Full ZH-Famous MMS run (2026-11-10)" above. No German/English evaluation results exist yet. The default code makes
 MMS-300M on ZH-Famous a suitable candidate first run, subject to dataset access and
 documented resolution of the differences above. An upstream-code run and a paper-setting
 run must be labeled separately if they use different settings; do not tune toward table values.
