@@ -1,0 +1,28 @@
+{
+  "name": "pvp-famous-figures-mms",
+  "settings": "upstream code at the pinned commit, not the paper text; differences in docs/reproduction.md",
+  "benchmark": "famous_figures",
+  "enroll": "original/PVP/protocols/famous_figures_enroll.csv",
+  "test": "original/PVP/protocols/famous_figures_test.csv",
+  "audio_root": "data/famous-figures/wav",
+  "backbone": "MMS",
+  "device": "cuda:0",
+  "alpha": 0.8,
+  "top_k": 12,
+  "min_enroll_files": 5,
+  "sources": {
+    "benchmark": "2_PVP.py:196-200 (second benchmark of the main script)",
+    "backbone": "2_PVP.py:18",
+    "device": "2_PVP.py:19-20",
+    "alpha": "2_PVP.py:79, default of HybridPOIDetector.predict",
+    "top_k": "2_PVP.py:53 and analyzer.py:178, default of fit",
+    "min_enroll_files": "2_PVP.py:124",
+    "fixed_in_code": "GMM settings, seeds (random_state=42), sigmoid centers/scales, reliability weights"
+  },
+  "paper": {
+    "source": "Table 2, PDF p. 6",
+    "setting": "MMS-300M with PVP, EN-Famous (Famous Figures)",
+    "eer_percent": 7.24,
+    "auc_percent": 96.61
+  }
+}
