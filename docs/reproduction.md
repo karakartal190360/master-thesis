@@ -494,6 +494,86 @@ clearly labelled additional analysis, decided before looking at test scores.
 | ZH-Famous | `zh-famous-audio-check.{csv,json,log}`, `zh-famous-identical-audio.csv`, `zh-famous-leakage.json` |
 | Famous Figures | `famous-figures-audio-check.{csv,json,log}`, `famous-figures-identical-audio.csv`, `famous-figures-leakage.json` |
 
+## PVP runner (Phase 4)
+
+[run_pvp.py](../scripts/run_pvp.py) runs one benchmark with the unchanged upstream code.
+Upstream's `run_poi_specificity_experiment` returns only aggregate metrics and drops failed
+trials, so the runner repeats its loop (`2_PVP.py:103-153`) with the same upstream objects:
+`UniversalPhonemeAnalyzer`, `HybridPOIDetector.fit` and `.predict`, the same protocol reading
+and `.wav` path rule, and the same "at least 5 enrollment files" rule. Additions only record:
+
+- every test trial gets a row in `scores.csv`: score, phoneme score, scoring tier, or a
+  failure reason. A trial is failed when `predict` raises (upstream prints and skips it) or
+  the speaker has no profile (upstream would crash with `KeyError`);
+- the tier text from `predict` shows upstream's silent fallbacks, e.g. `Extract Fail + ASV`
+  (no phoneme features, phoneme score 0.5, speaker score still used);
+- files without phoneme features are observed by wrapping the analyzer method without
+  changing its result;
+- fitted profiles (phoneme GMMs, weights, top-k set, broad-class GMMs, speaker GMM) are
+  saved per speaker in `profiles/`.
+
+Settings decision: runs use the **upstream code settings** at the pinned commit, not the
+paper text (differences in "Paper/code differences and ambiguities"). They are listed with
+their source lines in [pvp-zh-famous-mms.json](../configs/pvp-zh-famous-mms.json): MMS,
+`cuda:0`, alpha 0.8, top-k 12, minimum 5 enrollment files. All other values (GMM settings,
+`random_state=42`, sigmoid centers and scales, reliability weights) are fixed in upstream code.
+A run with paper settings would be a separate, labelled configuration.
+
+[evaluate_pvp.py](../scripts/evaluate_pvp.py) computes the metrics from `scores.csv` with
+upstream `utils.compute_eer` and `roc_auc_score`, pooled and per speaker, as
+`2_PVP.py:160-176`. Failed trials have no score and are excluded from the metrics, as
+upstream does, but they are counted and listed. The runner calls the same function, so a
+saved run can be re-evaluated later without the models.
+[test_evaluate_pvp.py](../tests/test_evaluate_pvp.py) checks the evaluator on toy scores:
+equality with the upstream functions, score direction, failed-trial accounting and the
+percent conversion for the paper comparison.
+
+```bash
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python scripts/run_pvp.py configs/pvp-zh-famous-mms.json --scientific
+.venv/bin/python scripts/evaluate_pvp.py results/runs/<run_id>/scores.csv --config configs/pvp-zh-famous-mms.json
+```
+
+Each run gets a new ID (`<UTC time>-<8 hex>`) and folder `results/runs/<run_id>/`:
+`run.json` (status, command, Git state incl. untracked files, upstream commit, config,
+protocol and weight SHA-256, Python, platform, GPU and driver, CUDA, cuDNN settings, package
+versions, peak GPU memory), `config.resolved.json`, `enrollment.json`, `scores.csv`,
+`metrics.json` (with paper comparison) and `profiles/`. The W&B run uses the same ID and
+uploads these files as a `reproducibility` artifact. `--scientific` refuses a dirty
+checkout or a protocol override; every other run is `scientific_result=false`.
+
+### Small end-to-end check (2026-11-10)
+
+Setup check, `scientific_result=false` (dirty checkout, subset protocol). Full ZH-Famous
+enrollment (10 speakers, 1,023 files) and a 210-trial test subset
+`results/checks/zh_famous_test_smoke.csv`: the first 10 bona fide and 2 spoof trials per
+speaker and system, plus hard cases from the Phase 3 checks (the two shortest files, the
+three longest, two low-level files, one missing file, two copies of enrollment files).
+W&B run [`20261110T160411Z-47465f87`](https://wandb.ai/umuttanriverdi/personalized-speech-deepfake-detection/runs/20261110T160411Z-47465f87).
+
+| Item | Result |
+| --- | --- |
+| Model loading | offline from linked files; no Hub access |
+| Enrollment | all 10 speakers; 7-15 s each; 70-81 phoneme GMMs, 12 top-k phonemes, 5-component speaker GMM; no enrollment file without phoneme features |
+| Trials | 210: 208 scored, 2 failed |
+| Failed | `95041.wav` missing from release; `95084.wav` (20 ms LLaSA) raises `RuntimeError` in ECAPA (padding larger than input). Upstream would print and skip both. |
+| Fallbacks | 5 LLaSA spoofs (short or near-silent) `Extract Fail + ASV`: phoneme score 0.5, fused about 0.60. Tiers: Level 1 139, Level 2 63, Level 3 1. |
+| Peak GPU memory | 3,802 MiB allocated, including the 50 s files (longest ZH-Famous files) |
+| Speed | 13.3 test trials/s; full ZH-Famous (203,921 trials) estimated at about 4.5 h |
+| Replay | second run `20261110T160708Z-f4cdd955` (W&B disabled): all scores, tiers and failures bit-identical |
+| Standalone evaluation | same metrics as the runner |
+
+Scores are strongly saturated: the median bona fide score and the 90th spoof percentile are
+both about 0.99999, and the EER threshold is 0.9999915. The saved full-precision `repr`
+values keep all 208 scores distinct, so this does not create ties here. This comes from the
+upstream sigmoid settings; keep full precision in all score files.
+
+The subset EER (15.09%) and AUC (92.72%) are **not** results: the subset is small, not
+representative, and deliberately contains hard cases.
+
+GPU driver: the run record shows driver 621.14; Phase 2 verified 610.88. The Windows driver
+was updated in between. The full run records its own driver version.
+
 ## Published comparison targets, not our results
 
 Table 2, PDF p. 6 / printed p. 5996; both metrics below are percentages.
