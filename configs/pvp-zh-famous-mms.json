@@ -1,0 +1,28 @@
+{
+  "name": "pvp-zh-famous-mms",
+  "settings": "upstream code at the pinned commit, not the paper text; differences in docs/reproduction.md",
+  "benchmark": "zh_famous",
+  "enroll": "original/PVP/protocols/zh_famous_enroll.csv",
+  "test": "original/PVP/protocols/zh_famous_test.csv",
+  "audio_root": "data/zh-famous/wav",
+  "backbone": "MMS",
+  "device": "cuda:0",
+  "alpha": 0.8,
+  "top_k": 12,
+  "min_enroll_files": 5,
+  "sources": {
+    "benchmark": "2_PVP.py:190-195 (first benchmark of the main script)",
+    "backbone": "2_PVP.py:18",
+    "device": "2_PVP.py:19-20",
+    "alpha": "2_PVP.py:79, default of HybridPOIDetector.predict",
+    "top_k": "2_PVP.py:53 and analyzer.py:178, default of fit",
+    "min_enroll_files": "2_PVP.py:124",
+    "fixed_in_code": "GMM settings, seeds (random_state=42), sigmoid centers/scales, reliability weights"
+  },
+  "paper": {
+    "source": "Table 2, PDF p. 6",
+    "setting": "MMS-300M with PVP, ZH-Famous",
+    "eer_percent": 11.37,
+    "auc_percent": 94.58
+  }
+}
