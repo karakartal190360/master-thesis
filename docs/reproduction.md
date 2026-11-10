@@ -249,7 +249,7 @@ system, and for some speakers channel count is tied to the label. Upstream's res
 downmixing remove most of this, but note it before interpreting per-system results.
 
 Runtime layout: upstream reads `./FamousFigure/wav` relative to its working directory;
-a link to `data/famous-figures/wav` is still needed before the first run.
+`scripts/link_pretrained.py` links it to `data/famous-figures/wav` (see "Runtime layout check").
 
 ### ZH-Famous download record (2026-11-05)
 
@@ -338,7 +338,7 @@ upstream. Sample rate is perfectly tied to the source system for three spoof sys
 note this as a dataset property before interpreting per-system results.
 
 Runtime layout: upstream reads `./zh_famous/wav` relative to its working directory;
-a link to `data/zh-famous/wav` is still needed before the first run.
+`scripts/link_pretrained.py` links it to `data/zh-famous/wav` (see "Runtime layout check").
 
 The shipped CSV header is `Speaker,AudioName,Source,Label`, although the upstream README
 documents `speaker,path,source,label`. The main script skips the header and assigns its
@@ -365,6 +365,134 @@ No exact duplicate full rows or exact `(speaker, path)` enrollment/test overlaps
 found in either benchmark. This checks metadata only. It does **not** establish audio
 integrity or rule out shared source recordings, overlapping segments, alternate filenames,
 or spoof-generation reference leakage. Those checks require the actual dataset and its provenance.
+The audio-based checks on 2026-11-08 found exact copies across enrollment and test; see
+"Audio integrity and leakage checks".
+
+### Runtime layout check (2026-11-08)
+
+Setup check on the WSL server, `scientific_result=false`; run before committing the
+`link_data` change to `scripts/link_pretrained.py`. The script now also links the data
+that `2_PVP.py:190-200` reads relative to its working directory:
+
+| Upstream lookup | Link target |
+| --- | --- |
+| `./protocols/` | `original/PVP/protocols/` (unchanged upstream CSVs) |
+| `./zh_famous/wav/` | `data/zh-famous/wav/` |
+| `./FamousFigure/wav/` | `data/famous-figures/wav/` |
+
+```bash
+.venv/bin/python scripts/link_pretrained.py results/runtime
+```
+
+A second run made no changes. From `results/runtime`, every protocol row was read and
+resolved with the upstream rule (`pd.read_csv(..., names=[...], header=0)`, append `.wav`
+unless present, `os.path.join(audio_root, key)`, `2_PVP.py:110-141`), then checked with
+`os.path.isfile`:
+
+| Benchmark | Enrollment rows found | Test rows found | Unique paths / files in root |
+| --- | --- | --- | --- |
+| ZH-Famous | 1,023 / 1,023 | 203,912 / 203,921 | 204,944 / 204,935 |
+| Famous Figures | 1,115 / 1,115 | 347,021 / 347,021 | 348,136 / 348,136 |
+
+The 9 unresolved ZH-Famous paths are exactly the 9 LLaSA test rows missing from the
+release (see "ZH-Famous protocol mapping check"). No WAV file in either root is unused.
+This check confirms file presence only; decoding, duration and leakage checks follow.
+
+`save_results` (`2_PVP.py:183-185`) opens `results/<benchmark>_<backbone>.txt` in the
+working directory and does not create `results/`. The link script does not create it
+either: output location is a decision for the future experiment wrapper.
+
+### Audio integrity and leakage checks (2026-11-08)
+
+Setup checks on the WSL server, `scientific_result=false`, run on an uncommitted checkout
+(script SHA-256 values in the reports). Nothing was removed or changed; protocols stay as
+published. Thresholds are our descriptive choices; upstream defines none.
+
+```bash
+.venv/bin/python scripts/check_dataset_audio.py --audio-root data/<dataset>/wav \
+  --enroll original/PVP/protocols/<benchmark>_enroll.csv \
+  --test original/PVP/protocols/<benchmark>_test.csv \
+  --output results/datasets/<dataset>-audio-check.csv \
+  --report results/datasets/<dataset>-audio-check.json --workers 12
+.venv/bin/python scripts/check_dataset_leakage.py --dataset <dataset> \
+  --audio-check results/datasets/<dataset>-audio-check.csv \
+  --manifest results/datasets/<dataset>-wav-manifest.csv \
+  [--parquet-dir data/zh-famous/data] \
+  --groups results/datasets/<dataset>-identical-audio.csv \
+  --report results/datasets/<dataset>-leakage.json
+```
+
+**Integrity.** `check_dataset_audio.py` decodes every protocol file with soundfile 0.12.1
+(float32, all channels) and measures level on the channel mean, as upstream's
+`librosa.load(mono=True)` does. It also hashes the decoded samples (sample rate, shape and
+values), so identical audio is found even in a different container.
+
+| Check | ZH-Famous | Famous Figures |
+| --- | --- | --- |
+| Decoded / protocol rows | 204,935 / 204,944 (9 known missing LLaSA files) | 348,136 / 348,136 |
+| Decode errors, empty, non-finite, digital silence, above full scale | 0 | 0 |
+| Shorter than 0.5 s | 2 (LLaSA) | 3,099 (LLASA 3,028) |
+| Shorter than 25 ms (400 samples at 16 kHz) | 1 (LLaSA) | 322 (LLASA 320, ZONOS 2) |
+| Longer than 30 s | 4,106 (enrollment 10, test bona fide 389, spoof 3,707); max 50.0 s | 446 (all test spoof; LLASA 329, SSRSPEECH 110); max 79.5 s |
+| Mean level below -60 dBFS | 362 (LLaSA 356, VOXCPM 6) | 1,888 (LLASA 1,863) |
+| More than 0.1% of samples at or above 0.999 | 6,800 (F5 4,856; enrollment 88) | 71 (test bona fide 69) |
+
+Duration summaries per source are in the JSON reports. Many very short or very quiet LLaSA
+outputs in both benchmarks look like failed generations. They remain valid spoof trials of
+the published protocol.
+
+Consequences for Phase 4: (1) files shorter than 400 samples at 16 kHz are probably too
+short for the wav2vec2-style feature encoder; upstream would print the error and skip the
+trial (`2_PVP.py:143-147`), so our runner must record such trials as failed, with reason.
+Check this on these files in the small end-to-end run. (2) The GPU memory check covered up
+to 30 s, but files reach 50 s (ZH) and 79.5 s (Famous Figures). Check peak memory on the
+longest file before a full run.
+
+**Identical audio.** `check_dataset_leakage.py` groups files by decoded-sample hash. In both
+benchmarks every group is also byte-identical (same file SHA-256). No group mixes labels.
+
+| Groups (files) | ZH-Famous | Famous Figures |
+| --- | --- | --- |
+| All | 6,259 (12,716) | 1,112 (2,418) |
+| Enrollment file = test bona fide file, same speaker | **60** (DengFan) | **34** (Barack_Obama 24, Tim_Walz 9, Joe_Biden 1) |
+| Within enrollment | 0 | 1 (`Tim_Walz_00377.wav` = `Tim_Walz_00378.wav`) |
+| Within test, bona fide | 3,066 (DengFan) | 1,000 (mostly Barack_Obama) |
+| Within test, spoof | 3,133 (all OpenAudio-S1-mini; sizes up to 92) | 77 (LLASA 69, SSRSPEECH 8; sizes up to 77) |
+| Several speakers | 0 | 9, all 20 ms near-silent LLASA fragments |
+
+ZH-Famous DengFan: 3,126 of 10,585 bona fide clips are exact copies of other DengFan clips.
+The later IDs (6,047-10,585) repeat earlier IDs (1-4,428) at four fixed ID offsets, so part
+of the source material seems to have been included twice. The 60 enrollment/test copies are
+0.18% of ZH bona fide test trials; the 34 are 0.07% for Famous Figures. These test trials
+contain exactly an enrollment utterance, so their genuine scores may be too high. The
+enrollment duplicate gives one Tim_Walz utterance double weight in the speaker profile.
+
+**Shared transcripts (ZH-Famous).** The release has a `transcription` column. Exact
+same-speaker matches with an enrollment transcript: 136 bona fide test trials (including
+the 60 copies) and 1,155-1,159 spoof test trials per system. Each spoof system
+re-synthesizes the bona fide texts, so test spoofs often say the same sentence as an
+enrollment utterance. This is a design property of the benchmark, not a file error.
+
+**Voice prompts (Famous Figures).** Many spoof file names end with the bona fide clip used
+as the voice prompt, e.g. `..._ZONOS__Barack_Obama_06562.wav`; LLASA names give only the
+number. This reading of the names is our inference. Of 297,870 test spoofs, 186,554 name a
+prompt and 111,316 do not (MASKGCT, PARLER, STYLETTS2, most XTTSV2, few others). Every speaker
+has exactly one prompt clip, and all ten are bona fide **test** files, not enrollment files.
+So the names show no enrollment-prompt leakage. A single test bona fide trial per speaker
+is the voice source for up to 73,720 spoofs (Barack_Obama).
+
+**Not checked.** Overlapping or partly shared segments, the same recording at another rate
+or encoding, and shared recording sessions between enrollment and test (consecutive ZH IDs
+suggest continuous sessions). These need audio fingerprinting or provenance data.
+
+**Handling.** The first baseline uses the official protocols unchanged, as required. Report
+these findings with the results. Any analysis without the leaked trials is a separate,
+clearly labelled additional analysis, decided before looking at test scores.
+
+| Evidence | Files in `results/datasets/` |
+| --- | --- |
+| ZH-Famous | `zh-famous-audio-check.{csv,json,log}`, `zh-famous-identical-audio.csv`, `zh-famous-leakage.json` |
+| Famous Figures | `famous-figures-audio-check.{csv,json,log}`, `famous-figures-identical-audio.csv`, `famous-figures-leakage.json` |
 
 ## Published comparison targets, not our results
 

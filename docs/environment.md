@@ -391,6 +391,7 @@ pinned local files:
 | `speechbrain/spkrec-ecapa-voxceleb` (`2_PVP.py:25`) | ECAPA directory | SpeechBrain 1.0.2 treats the source as local only if that directory exists. Otherwise it always contacts the Hub (`allow_updates=True`), even when `savedir` already holds the files. Found when the first offline run failed. |
 | `pretrained_models/spkrec-ecapa-voxceleb/*` (`savedir`) | one link per ECAPA file | SpeechBrain writes into `savedir` (it added `custom.py` and `label_encoder.ckpt` links). Per-file links keep these writes out of `models/`. |
 | `vocab.json` (`analyzer.py:114`) | `original/PVP/vocab.json` | Upstream silently uses an empty category map if this file is missing. |
+| `protocols/`, `zh_famous/wav/`, `FamousFigure/wav/` (`2_PVP.py:190-200`) | `original/PVP/protocols/`, `data/zh-famous/wav/`, `data/famous-figures/wav/` | Added 2026-11-08 by `link_data`; see `docs/reproduction.md`, "Runtime layout check". |
 
 The script refuses to replace any existing path that is not the expected link.
 
