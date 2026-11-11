@@ -1,0 +1,4 @@
+# Result analysis notebooks: plots, Jupyter kernel, headless execution check.
+matplotlib
+ipykernel
+nbclient

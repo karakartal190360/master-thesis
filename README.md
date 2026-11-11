@@ -25,9 +25,17 @@ thesis work will continue in a separate `master-thesis` branch based on this wor
 
 ## Current status
 
-CUDA software checks and W&B setup pass. The three pretrained models are downloaded
-and run together on the GPU through the original code. Pipeline implementation
-remains pending. Dataset licenses remain under review. No reproduction results exist yet.
+PVP is reproduced with its default MMS-300M model on both official benchmarks
+(EER, lower is better):
+
+| Benchmark | Paper | Our run |
+| --- | ---: | ---: |
+| ZH-Famous | 11.37% | 12.24% |
+| EN-Famous | 7.24% | 7.34% |
+
+The [result notebook](notebooks/pvp_reproduction_demo.ipynb) explains the method,
+decisions and results with figures. Additional datasets are not evaluated yet.
+Dataset licenses remain under review.
 
 See the [setup instructions](docs/environment.md),
 [reproduction notes](docs/reproduction.md), and
