@@ -66,7 +66,9 @@ def environment():
             "torch_cuda": torch.version.cuda, "cudnn": torch.backends.cudnn.version(),
             "cudnn_benchmark": torch.backends.cudnn.benchmark,
             "cudnn_deterministic": torch.backends.cudnn.deterministic,
-            "packages": {p: importlib.metadata.version(p) for p in PACKAGES}}
+            "packages": {p: importlib.metadata.version(p) for p in PACKAGES},
+            "installed": sorted(f"{d.metadata['Name']}=={d.version}"  # full venv state
+                                for d in importlib.metadata.distributions())}
 
 
 def read_protocol(path):
