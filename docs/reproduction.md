@@ -661,6 +661,100 @@ The subset EER (6.60%) and AUC (98.45%) are **not** results (small, non-represen
 with deliberate hard cases). The full release has 322 files under 25 ms, so a few hundred
 failed trials are expected in the full run; each will be recorded with its reason.
 
+### Full Famous Figures MMS run (2026-11-10)
+
+Scientific run `20261110T194052Z-89c7e58d` (`scientific_result=true`), clean checkout at
+`5c761cf`, upstream `1eed3f4`, config [pvp-famous-figures-mms.json](../configs/pvp-famous-figures-mms.json)
+(upstream code settings), full official enrollment and test protocols. W&B run
+[`20261110T194052Z-89c7e58d`](https://wandb.ai/umuttanriverdi/personalized-speech-deepfake-detection/runs/20261110T194052Z-89c7e58d)
+with the `reproducibility` artifact; local record `results/runs/20261110T194052Z-89c7e58d/`
+on the server. Command: `.venv/bin/python scripts/run_pvp.py configs/pvp-famous-figures-mms.json --scientific --wandb online`.
+Same environment as the ZH-Famous run.
+
+| Item | Result |
+| --- | --- |
+| Run time | 2026-11-10 19:40 to 2026-11-11 01:17 UTC (5 h 37 min); 17.3 test trials/s |
+| Enrollment | all 10 speakers (100-215 files each); 42-51 phoneme GMMs, 5-component speaker GMM; no enrollment file without phoneme features |
+| Trials | 347,021: 346,688 scored (49,151 bona fide, 297,537 spoof), 333 failed |
+| Failed | 333 spoofs (330 LLASA, 3 ZONOS), all 10-40 ms long, including all 322 test files under 25 ms: `RuntimeError` in ECAPA (padding larger than input) |
+| Tiers | Level 1 340,263; Level 2 2,685; Level 3 515; `Extract Fail + ASV` 3,225 (3,224 spoof, mostly LLASA; 1 bona fide) |
+| Stereo files | all 13,229 stereo test files scored (upstream downmix) |
+| Peak GPU memory | 4,676 MiB allocated |
+| Ties | 1,042 score values occur more than once; none mixes bona fide and spoof |
+
+**Our result compared with the paper** (Table 2, MMS-300M with PVP, EN-Famous; percent):
+
+| Source | EER | ROC-AUC |
+| --- | ---: | ---: |
+| Paper-reported | 7.24 | 96.61 |
+| Our run (upstream code settings) | 7.34 | 96.58 |
+| Difference (ours minus paper) | +0.10 | -0.03 |
+
+Same metric as the ZH-Famous run (pooled over all scored trials of the dataset). The result is
+very close to the paper: EER 0.10 points higher, AUC 0.03 points lower. Nothing was tuned
+toward the table values.
+
+Per speaker (EER / AUC, percent): Anthony_Blinken 3.79 / 99.53, Barack_Obama 10.18 / 95.35,
+Donald_Trump 4.68 / 97.92, Elon_Musk 6.57 / 98.92, JD_Vance 3.06 / 99.80, Joe_Biden 3.84 / 99.31,
+Kamala_Harris 6.05 / 98.64, Mathew_Miller 1.72 / 99.70, Tim_Walz 10.87 / 95.98,
+Vivek_Ramaswamy 6.44 / 97.20. Barack_Obama has 48% of all test trials, so it strongly
+influences the pooled result.
+
+Additional analyses of the same scores (not paper comparisons; the main result above is unchanged):
+
+| Analysis | EER | AUC |
+| --- | ---: | ---: |
+| All bona fide vs MASKGCT only | 1.55 | 99.89 |
+| All bona fide vs PARLER only | 1.73 | 99.81 |
+| All bona fide vs COZYVOICE2 only | 1.89 | 99.85 |
+| All bona fide vs XTTSV2 only | 2.02 | 99.84 |
+| All bona fide vs FISHSPEECH only | 2.28 | 99.83 |
+| All bona fide vs E2TTS only | 2.32 | 99.80 |
+| All bona fide vs F5TTS only | 2.56 | 99.77 |
+| All bona fide vs SSRSPEECH only | 2.56 | 99.75 |
+| All bona fide vs LLASA only | 6.63 | 96.93 |
+| All bona fide vs ZONOS only | 7.50 | 97.93 |
+| All bona fide vs STYLETTS2 only | 33.13 | 74.83 |
+| Without the 34 bona fide test copies of enrollment files | 7.34 | 96.58 |
+| 333 failed spoof trials counted as accepted (worst case) | 7.42 | 96.47 |
+
+STYLETTS2 is by far the hardest system for PVP here; the others are below 8% EER. The failed
+trials can change the EER by at most 0.08 points. All 3,224 spoof fallbacks score below the EER
+threshold (rejected); the single bona fide fallback is wrongly rejected.
+
+## Phase 4 summary (2026-11-11)
+
+Scope decision (user, 2026-11-11): reproduce PVP with its default backbone only. MMS-300M
+(`nii-yamagishilab/mms-300m-anti-deepfake`) is the default in upstream `2_PVP.py:18`, and the
+main script runs both benchmarks with it. The other Table 2 backbones (wav2vec small/large,
+XLS-R 1B, HuBERT XLarge) are not reproduced.
+
+| MMS-300M with PVP, upstream code settings | ZH-Famous EER | ZH-Famous AUC | EN-Famous EER | EN-Famous AUC |
+| --- | ---: | ---: | ---: | ---: |
+| Paper-reported (Table 2) | 11.37 | 94.58 | 7.24 | 96.61 |
+| Our runs | 12.24 | 93.62 | 7.34 | 96.58 |
+| Difference (ours minus paper) | +0.87 | -0.96 | +0.10 | -0.03 |
+
+Runs: `20261110T161146Z-a7e7dcab` (ZH-Famous) and `20261110T194052Z-89c7e58d` (EN-Famous),
+both `scientific_result=true` from clean commits. Conclusion: the published MMS results are
+reproduced closely with the unchanged public code: very close on EN-Famous, about one point
+apart on ZH-Famous. The user accepted the ZH-Famous gap without further analysis.
+
+Limitations:
+
+- settings follow the public code, which differs from the paper text in several places
+  ("Paper/code differences and ambiguities"); the exact configuration behind Table 2 is unknown;
+- 9 ZH-Famous test files are missing from the release; very short files fail in ECAPA
+  (10 ZH-Famous, 333 EN-Famous trials, all spoofs) and are excluded from the metrics as
+  upstream does; worst-case effect at most 0.08 EER points;
+- the paper's `Pooled` column is not defined in the paper or code; all 20 of its values in Table 2
+  equal the arithmetic mean of the ZH-Famous and EN-Famous values (rounded down to 2 decimals,
+  except the printed 9.305). It is not computed on pooled trials. With this inferred rule our MMS
+  values are EER 9.79 and AUC 95.10 (paper 9.305 and 95.59; +0.48 and -0.49 points);
+- the original-backbone baselines of Table 2 are not run (`1_backbone_baseline.py` imports an
+  absent package);
+- full runs were not replayed; both smoke-check replays were bit-identical.
+
 ## Published comparison targets, not our results
 
 Table 2, PDF p. 6 / printed p. 5996; both metrics below are percentages.
@@ -671,7 +765,7 @@ Table 2, PDF p. 6 / printed p. 5996; both metrics below are percentages.
 | With PVP | 11.37 | 94.58 | 7.24 | 96.61 |
 
 Our first reproduced result (ZH-Famous, MMS-300M with PVP, upstream code settings) is in
-"Full ZH-Famous MMS run (2026-11-10)" above. No German/English evaluation results exist yet. The default code makes
+"Full ZH-Famous MMS run (2026-11-10)" and "Full Famous Figures MMS run (2026-11-10)" above (MMS-300M with PVP: ZH-Famous EER 12.24 / AUC 93.62, EN-Famous EER 7.34 / AUC 96.58). No German/English evaluation results exist yet. The default code makes
 MMS-300M on ZH-Famous a suitable candidate first run, subject to dataset access and
 documented resolution of the differences above. An upstream-code run and a paper-setting
 run must be labeled separately if they use different settings; do not tune toward table values.
@@ -682,8 +776,10 @@ Use and record this definition for a code-faithful comparison. `bonafide` is pos
 label 1 and `spoof` is 0. Code AUC and EER are stored as fractions; printed EER is
 multiplied by 100, while printed AUC remains a fraction. Convert consistently for the paper.
 The main script reports pooled trials within each dataset plus per-speaker metrics,
-but does not compute the paper's cross-dataset `Pooled` column. Its aggregation rule
-must be established before reproducing that column.
+but does not compute the paper's cross-dataset `Pooled` column. Checked on 2026-11-11: every
+`Pooled` value in Table 2 (5 backbones, baseline and PVP, AUC and EER) equals the mean of the two
+dataset values, so `Pooled` is an average of two dataset results, not a metric on combined trials.
+MMS-300M with PVP: `Pooled` AUC 95.59, EER 9.305.
 
 ## Phase 1 verification record
 
