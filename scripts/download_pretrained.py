@@ -22,11 +22,12 @@ def sha256(path):
 def main():
     root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--plan", type=Path, default=root / "configs/pretrained-models.json")
     parser.add_argument("--output", type=Path, default=root / "models")
     parser.add_argument("--report", type=Path,
                         default=root / "results/environment/pretrained-download.json")
     args = parser.parse_args()
-    plan_path = root / "configs/pretrained-models.json"
+    plan_path = args.plan
     plan = json.loads(plan_path.read_text())
 
     os.environ["HF_HUB_OFFLINE"] = "0"

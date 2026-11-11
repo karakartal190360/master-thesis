@@ -264,3 +264,6 @@ exp/
 *.npy
 *.npz
 *.parquet
+
+# Qwen3-TTS environment (separate from the PVP .venv)
+.venv-qwen3tts/

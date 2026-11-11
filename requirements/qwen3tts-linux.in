@@ -1,0 +1,7 @@
+# Qwen3-TTS voice-cloning runtime on Ubuntu WSL2 (Phase 6 spoof generation).
+# Separate from the PVP environment: needs transformers 4.57.3 and Python >= 3.10.
+# qwen-tts 0.1.1 = upstream commit 6cafe558 (2026-02-06); later commits change fine-tuning only.
+qwen-tts==0.1.1
+# Same torch build as the PVP lock (PyPI, CUDA 12.4 runtime), already verified on this GPU.
+torch==2.6.0
+torchaudio==2.6.0
