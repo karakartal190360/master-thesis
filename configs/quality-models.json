@@ -1,0 +1,53 @@
+{
+  "inspected_on": "2026-11-15",
+  "status": "Pinned for clone quality checks (not detectors); sizes and LFS SHA-256 from the Hugging Face API at this revision",
+  "models": [
+    {
+      "repository": "openai/whisper-large-v3-turbo",
+      "revision": "41f01f3fe87f28c78e2fbf8b568835947dd65ed9",
+      "directory": "whisper-large-v3-turbo",
+      "use": "intelligibility (word/character error rate) and spoken-language check; MIT",
+      "files": [
+        {"path": "added_tokens.json", "size_bytes": 34648, "sha256": null},
+        {"path": "config.json", "size_bytes": 1256, "sha256": null},
+        {"path": "generation_config.json", "size_bytes": 3772, "sha256": null},
+        {"path": "merges.txt", "size_bytes": 493869, "sha256": null},
+        {"path": "model.safetensors", "size_bytes": 1617824864,
+         "sha256": "542566a422ae4f3fd23f1ba11add198fca01bbf82e66e6a2857b3f608b1eb9d1"},
+        {"path": "normalizer.json", "size_bytes": 52666, "sha256": null},
+        {"path": "preprocessor_config.json", "size_bytes": 340, "sha256": null},
+        {"path": "special_tokens_map.json", "size_bytes": 2186, "sha256": null},
+        {"path": "tokenizer.json", "size_bytes": 2710337, "sha256": null},
+        {"path": "tokenizer_config.json", "size_bytes": 282843, "sha256": null},
+        {"path": "vocab.json", "size_bytes": 1036558, "sha256": null}
+      ]
+    },
+    {
+      "repository": "microsoft/wavlm-base-plus-sv",
+      "revision": "feb593a6c23c1cc3d9510425c29b0a14d2b07b1e",
+      "directory": "wavlm-base-plus-sv",
+      "use": "speaker similarity (x-vector cosine); deliberately not ECAPA, which PVP itself uses",
+      "files": [
+        {"path": "config.json", "size_bytes": 58639, "sha256": null},
+        {"path": "preprocessor_config.json", "size_bytes": 215, "sha256": null},
+        {"path": "pytorch_model.bin", "size_bytes": 404547053,
+         "sha256": "e906bce2fa42fb497a1d1a9ecf81548adb7e03b12a5644e32d2f42f0d6500fad"}
+      ]
+    }
+  ],
+  "github": [
+    {
+      "repository": "tarepan/SpeechMOS",
+      "commit": "ed25eacbfa42b99156c36ebec67a733b5dbb9b79",
+      "tag": "v1.2.0",
+      "directory": "speechmos-ed25eac",
+      "use": "UTMOS22 strong learner, predicted naturalness MOS; MIT; trained on English VoiceMOS 2022 data",
+      "files": [
+        {"url": "https://github.com/tarepan/SpeechMOS/archive/ed25eacbfa42b99156c36ebec67a733b5dbb9b79.tar.gz",
+         "path": "source.tar.gz"},
+        {"url": "https://github.com/tarepan/SpeechMOS/releases/download/v1.0.0/utmos22_strong_step7459_v1.pt",
+         "path": "utmos22_strong_step7459_v1.pt", "size_bytes": 411179119}
+      ]
+    }
+  ]
+}
