@@ -85,8 +85,10 @@ class Checks:
         self.asr_processor = WhisperProcessor.from_pretrained(whisper)
         self.asr = WhisperForConditionalGeneration.from_pretrained(
             whisper, torch_dtype=torch.float16).to(device).eval()
-        self.lang_ids = {lang: self.asr_processor.tokenizer.convert_tokens_to_ids(f"<|{lang}|>")
-                         for lang in ["de", "en"]}
+        # all Whisper language tokens, e.g. <|de|>; detection = softmax over these only
+        tokenizer = self.asr_processor.tokenizer
+        self.lang_ids = {t[2:-2]: tokenizer.convert_tokens_to_ids(t) for t in tokenizer.additional_special_tokens
+                         if re.fullmatch(r"<\|[a-z]{2,3}\|>", t) and t not in ("<|nocaptions|>",)}
         wavlm = MODELS / "wavlm-base-plus-sv"
         self.sv_extractor = AutoFeatureExtractor.from_pretrained(wavlm)
         self.sv = WavLMForXVector.from_pretrained(wavlm).to(device).eval()
@@ -103,9 +105,10 @@ class Checks:
             # language detection: first decoder step after <|startoftranscript|>
             start = torch.tensor([[self.asr.generation_config.decoder_start_token_id]], device=self.device)
             logits = self.asr(input_features=features, decoder_input_ids=start).logits[0, -1]
-            probs = torch.softmax(logits.float(), -1)
-            detected = max(self.lang_ids, key=lambda k: logits[self.lang_ids[k]].item())
-            p_target = probs[self.lang_ids[lang]].item()
+            codes = list(self.lang_ids)
+            probs = torch.softmax(logits[[self.lang_ids[c] for c in codes]].float(), -1)
+            detected = codes[int(probs.argmax())]
+            p_target = probs[codes.index(lang)].item()
             ids = self.asr.generate(features, language=LANGUAGE[lang], task="transcribe")
         text = self.asr_processor.batch_decode(ids, skip_special_tokens=True)[0].strip()
         return detected, round(p_target, 4), text
@@ -157,7 +160,7 @@ def measure(checks, path, speaker, lang, text, cents):
 def listening_folder(clones, run_id):
     out = ROOT / "results/deepfake-checks" / run_id
     out.mkdir(parents=True, exist_ok=True)
-    sheet = []
+    sheet, seen = [], set()
     for c in clones:
         folder = out / c["speaker"]
         folder.mkdir(exist_ok=True)
@@ -167,8 +170,9 @@ def listening_folder(clones, run_id):
                  (f"reference_{c['ref_language']}_{int(c['ref_sentence']):04d}.wav",
                   DATA / c["ref_file"], "voice prompt (genuine)")]
         for name, source, kind in pairs:
-            if (folder / name).exists() or not source.exists():
+            if not source.exists() or f"{c['speaker']}/{name}" in seen:
                 continue
+            seen.add(f"{c['speaker']}/{name}")
             shutil.copyfile(source, folder / name)
             sheet.append({"file": f"{c['speaker']}/{name}", "kind": kind, "speaker": c["speaker"],
                           "language": c["language"] if kind != "voice prompt (genuine)" else c["ref_language"],
