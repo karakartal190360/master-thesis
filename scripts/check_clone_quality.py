@@ -199,6 +199,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("clone_run", type=Path, help="results/clones/<run id>")
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--no-listening", action="store_true",
+                        help="skip the listening folder (full runs: avoids copying every clone)")
     args = parser.parse_args()
     clones = [r for r in csv.DictReader((args.clone_run / "clones.csv").open(encoding="utf-8"))
               if r["status"] in ("generated", "existing")]
@@ -245,7 +247,7 @@ def main():
                       "utmos", "duration_s", "duration_ratio"]},
                      "wrong_language": sum(r["detected_language"] != r["language"] for r in g)}
                for key, g in sorted(groups.items())}
-    folder = listening_folder(clones, run_id)
+    folder = None if args.no_listening else listening_folder(clones, run_id)
     report = {
         "created_at": datetime.now(timezone.utc).isoformat(), "purpose": "clone_quality_check",
         "clone_run": run_id, "command": [sys.executable, *sys.argv],
@@ -253,7 +255,7 @@ def main():
         "git_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True)),
         "script_sha256": sha256(__file__), "models": "configs/quality-models.json",
         "utmos_weights_sha256": sha256(SPEECHMOS / "utmos22_strong_step7459_v1.pt"),
-        "speakers": speakers, "summary": summary, "listening_folder": str(folder),
+        "speakers": speakers, "summary": summary, "listening_folder": folder and str(folder),
     }
     (out / "report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
     print(json.dumps(summary, indent=1))
