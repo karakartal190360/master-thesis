@@ -188,7 +188,7 @@ def start_wandb(mode, run_id, run_dir, run_config, tags):
                       dir=str(run_dir), mode=mode, settings=settings)
 
 
-def upload(run, run_dir, record):
+def upload(run, run_dir, record, with_profiles):
     import wandb
 
     summary = record["metrics"]["pooled"]
@@ -199,7 +199,8 @@ def upload(run, run_dir, record):
                                         "git_commit": record["git"]["commit"]})
     for name in ["run.json", "config.resolved.json", "enrollment.json", "scores.csv", "metrics.json"]:
         artifact.add_file(str(run_dir / name))
-    artifact.add_dir(str(run_dir / "profiles"), name="profiles")
+    if with_profiles:  # fitted speaker models: personal data, opt-in only
+        artifact.add_dir(str(run_dir / "profiles"), name="profiles")
     logged = run.log_artifact(artifact)
     if run.settings.mode == "online":
         logged.wait()
@@ -212,6 +213,8 @@ def main():
     parser.add_argument("--scientific", action="store_true",
                         help="official run: refuse a dirty checkout or a protocol override")
     parser.add_argument("--wandb", choices=["online", "offline", "disabled"], default="online")
+    parser.add_argument("--wandb-profiles", action="store_true",
+                        help="also upload fitted speaker profiles to W&B (default: local only)")
     args = parser.parse_args()
 
     config = json.loads(args.config.read_text())
@@ -233,6 +236,7 @@ def main():
         "audio_root": str((ROOT / config["audio_root"]).resolve()),
         "weights_sha256": {name: sha256(MODELS / name) for name in WEIGHT_FILES},
         "environment": environment(),
+        "wandb_profiles_uploaded": bool(args.wandb_profiles and args.wandb != "disabled"),
         "seeds": "no random sampling at inference; GMMs use random_state=42 (analyzer.py:137, 2_PVP.py:68-74)",
     }
     (run_dir / "config.resolved.json").write_text(json.dumps(config, indent=2) + "\n")
@@ -280,7 +284,7 @@ def main():
                        "paper_comparison": metrics["paper_comparison"]})
         record_path.write_text(json.dumps(record, indent=2) + "\n")
         if run:
-            upload(run, run_dir, record)
+            upload(run, run_dir, record, args.wandb_profiles)
             record["wandb_url"] = run.url if args.wandb == "online" else None
     except BaseException as error:
         record.update({"status": "failed", "error": f"{type(error).__name__}: {error}"})
