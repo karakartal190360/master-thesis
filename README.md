@@ -37,8 +37,7 @@ The [result notebook](notebooks/pvp_reproduction_demo.ipynb) explains the method
 decisions and results with figures. Additional datasets are not evaluated yet.
 Dataset licenses remain under review.
 
-See the [setup instructions](docs/environment.md),
-[reproduction notes](docs/reproduction.md), and
-[original repository](https://github.com/JunXue-tech/PVP).
+See the [original repository](https://github.com/JunXue-tech/PVP).
+Setup and reproduction notes are kept locally and are not part of this repository.
 The [main branch README](https://github.com/karakartal190360/master-thesis/blob/main/README.md)
 keeps the detailed project and setup information.

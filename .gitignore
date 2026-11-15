@@ -3,10 +3,6 @@ __pycache__/
 *.py[codz]
 *$py.class
 
-AGENTS.md
-CLAUDE.md 
-/CLAUDE.md
-/AGENTS.md
 # C extensions
 *.so
 
@@ -267,3 +263,10 @@ exp/
 
 # Qwen3-TTS environment (separate from the PVP .venv)
 .venv-qwen3tts/
+
+# Agent instructions and research notes (kept local, not in Git)
+/AGENTS.md
+/CLAUDE.md
+/docs/
+/reports/
+/research_notes/
