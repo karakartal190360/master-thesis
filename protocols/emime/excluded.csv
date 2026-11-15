@@ -1,0 +1,4 @@
+speaker,language,sentence,file,part,reason
+GM3,de,1,v1/UEDIN_bilingual_data_2010/downsampled_22kHz/German_talkers/Male/GM3/Ger/GM3_GER_0001_0.wav,test,"audio identical to GM1_GER_0001_0; mic-1 envelope correlation with GM1 0.91, with GM3 0.35: release error, recording is GM1"
+GF3,en,69,v1/UEDIN_bilingual_data_2010/downsampled_22kHz/German_talkers/Female/GF3/Eng/GF3_ENG_0069_0.wav,test,"near-silent on both microphones (mic 0 -69.4 dBFS, 0.73 s for a full sentence)"
+GF3,en,94,v1/UEDIN_bilingual_data_2010/downsampled_22kHz/German_talkers/Female/GF3/Eng/GF3_ENG_0094_0.wav,test,"near-silent on both microphones (mic 0 -71.3 dBFS, mic 1 -59.5 dBFS)"
