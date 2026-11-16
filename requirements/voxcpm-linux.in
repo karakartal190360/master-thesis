@@ -1,0 +1,10 @@
+# VoxCPM2 voice-cloning runtime on Ubuntu WSL2 (Phase 6 confirmation set, generator 2).
+# Separate from the PVP and Qwen3-TTS environments.
+voxcpm==2.0.3
+# Same torch build as the PVP and Qwen3-TTS locks (PyPI, CUDA 12.4 runtime).
+torch==2.6.0
+torchaudio==2.6.0
+# torchcodec 0.2 is the release built for torch 2.6.
+torchcodec==0.2.1
+# Same Transformers as the Qwen3-TTS lock; 5.x support is not documented by this tool.
+transformers==4.57.3

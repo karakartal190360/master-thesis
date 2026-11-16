@@ -157,8 +157,8 @@ def margin_reading(ci):
 def summary(pooled, boot, per_talker=None):
     out = {"pooled": round(pooled, 3), "ci95": interval(boot)}
     if per_talker is not None:
-        values = [per_talker[t] for t in TALKERS]
-        out.update({"per_talker": {t: round(per_talker[t], 3) for t in TALKERS},
+        values = list(per_talker.values())  # talker order as given (German or Finnish talkers)
+        out.update({"per_talker": {t: round(v, 3) for t, v in per_talker.items()},
                     "per_talker_mean": round(float(np.mean(values)), 3),
                     "talkers_positive": int(sum(v > 0 for v in values)),
                     "p_sign_flip": sign_flip(values)})

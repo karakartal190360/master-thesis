@@ -1,0 +1,10 @@
+# XTTS v2 voice-cloning runtime on Ubuntu WSL2 (Phase 6 confirmation set, generator 3).
+# coqui-tts is the maintained fork (Idiap) of Coqui TTS; separate environment.
+coqui-tts==0.28.0
+# Same torch build as the PVP and Qwen3-TTS locks (PyPI, CUDA 12.4 runtime).
+torch==2.6.0
+torchaudio==2.6.0
+# Same Transformers as the Qwen3-TTS lock; 5.x support is not documented by this tool.
+transformers==4.57.3
+# coqui-tts 0.28.0 imports six (TTS/tts/utils/text/punctuation.py) without declaring it.
+six==1.17.0

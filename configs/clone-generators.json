@@ -1,0 +1,109 @@
+{
+  "inspected_on": "2026-11-16",
+  "status": "Pinned for Phase 6 confirmation sets (generators 2 and 3, analysis plan Section 7); user-approved download 2026-11-16; sizes and LFS SHA-256 from the Hugging Face API at this revision",
+  "licences": {
+    "openbmb/VoxCPM2": "Apache 2.0",
+    "coqui/XTTS-v2": "Coqui Public Model License 1.0.0, non-commercial (LICENSE.txt)"
+  },
+  "models": [
+    {
+      "repository": "openbmb/VoxCPM2",
+      "revision": "7936080b41163874f38610f46f438e2c0757f9fd",
+      "directory": "voxcpm2",
+      "files": [
+        {
+          "path": "README.md",
+          "size_bytes": 7903,
+          "sha256": null
+        },
+        {
+          "path": "audiovae.pth",
+          "size_bytes": 376951122,
+          "sha256": "94b5d51e107e0507d4acc976cfdadb64edd6fd06d1f751dadbf2fd1594274bf1"
+        },
+        {
+          "path": "config.json",
+          "size_bytes": 4336,
+          "sha256": null
+        },
+        {
+          "path": "model.safetensors",
+          "size_bytes": 4580080592,
+          "sha256": "f7f964cfa9da23653baec6e6f7750719977ad944ed9f95fe52fe3a620506891d"
+        },
+        {
+          "path": "special_tokens_map.json",
+          "size_bytes": 1632,
+          "sha256": null
+        },
+        {
+          "path": "tokenization_voxcpm2.py",
+          "size_bytes": 2895,
+          "sha256": null
+        },
+        {
+          "path": "tokenizer.json",
+          "size_bytes": 3676772,
+          "sha256": null
+        },
+        {
+          "path": "tokenizer_config.json",
+          "size_bytes": 5059,
+          "sha256": null
+        }
+      ]
+    },
+    {
+      "repository": "coqui/XTTS-v2",
+      "revision": "6c2b0d75eae4b7047358e3b6bd9325f857d43f77",
+      "directory": "xtts-v2",
+      "files": [
+        {
+          "path": "LICENSE.txt",
+          "size_bytes": 4014,
+          "sha256": null
+        },
+        {
+          "path": "README.md",
+          "size_bytes": 4263,
+          "sha256": null
+        },
+        {
+          "path": "config.json",
+          "size_bytes": 4368,
+          "sha256": null
+        },
+        {
+          "path": "dvae.pth",
+          "size_bytes": 210514388,
+          "sha256": "b29bc227d410d4991e0a8c09b858f77415013eeb9fba9650258e96095557d97a"
+        },
+        {
+          "path": "hash.md5",
+          "size_bytes": 32,
+          "sha256": null
+        },
+        {
+          "path": "mel_stats.pth",
+          "size_bytes": 1067,
+          "sha256": "1f69422a8a8f344c4fca2f0c6b8d41d2151d6615b7321e48e6bb15ae949b119c"
+        },
+        {
+          "path": "model.pth",
+          "size_bytes": 1867929118,
+          "sha256": "c7ea20001c6a0a841c77e252d8409f6a74fb423e79b3206a0771ba5989776187"
+        },
+        {
+          "path": "speakers_xtts.pth",
+          "size_bytes": 7754818,
+          "sha256": "f0f6137c19a4eab0cbbe4c99b5babacf68b1746e50da90807708c10e645b943b"
+        },
+        {
+          "path": "vocab.json",
+          "size_bytes": 361219,
+          "sha256": null
+        }
+      ]
+    }
+  ]
+}
