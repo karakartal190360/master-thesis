@@ -102,7 +102,9 @@ def compare_metrics(a, b):
         speaker = [abs(a["per_speaker"][s][metric] - b["per_speaker"][s][metric])
                    for s in a["per_speaker"]
                    if s in b["per_speaker"] and a["per_speaker"][s][metric] is not None]
-        result[metric] = {"a": x, "b": y, "difference_points": 100 * (y - x),
+        # None: metric undefined (genuine-only test lists, e.g. EMIME Finnish talkers)
+        difference = None if x is None or y is None else 100 * (y - x)
+        result[metric] = {"a": x, "b": y, "difference_points": difference,
                           "max_per_speaker_difference_points": 100 * max(speaker, default=0.0)}
     return result
 
