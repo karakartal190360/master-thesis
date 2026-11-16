@@ -1,0 +1,64 @@
+file,speaker,language,ref_language,reason
+clones/qwen3tts/GF1/GF1_DE_0019_qwen3tts_refen_synthetic.wav,GF1,de,en,CER 0.143 above genuine
+clones/qwen3tts/GF1/GF1_DE_0022_qwen3tts_refen_synthetic.wav,GF1,de,en,detected language en; CER 0.147 above genuine
+clones/qwen3tts/GF1/GF1_DE_0040_qwen3tts_refen_synthetic.wav,GF1,de,en,CER 0.191 above genuine
+clones/qwen3tts/GF1/GF1_EN_0026_qwen3tts_refde_synthetic.wav,GF1,en,de,CER 0.197 above genuine
+clones/qwen3tts/GF1/GF1_EN_0082_qwen3tts_refde_synthetic.wav,GF1,en,de,detected language de
+clones/qwen3tts/GF1/GF1_EN_0140_qwen3tts_refde_synthetic.wav,GF1,en,de,CER 0.130 above genuine
+clones/qwen3tts/GF2/GF2_DE_0021_qwen3tts_refen_synthetic.wav,GF2,de,en,detected language en; CER 0.115 above genuine
+clones/qwen3tts/GF2/GF2_EN_0030_qwen3tts_refde_synthetic.wav,GF2,en,de,CER 0.113 above genuine
+clones/qwen3tts/GF2/GF2_EN_0066_qwen3tts_refde_synthetic.wav,GF2,en,de,detected language de
+clones/qwen3tts/GF2/GF2_EN_0082_qwen3tts_refde_synthetic.wav,GF2,en,de,detected language de
+clones/qwen3tts/GF2/GF2_EN_0140_qwen3tts_refde_synthetic.wav,GF2,en,de,CER 0.261 above genuine
+clones/qwen3tts/GF3/GF3_DE_0021_qwen3tts_refen_synthetic.wav,GF3,de,en,CER 0.115 above genuine
+clones/qwen3tts/GF3/GF3_EN_0066_qwen3tts_refde_synthetic.wav,GF3,en,de,detected language de
+clones/qwen3tts/GF3/GF3_EN_0082_qwen3tts_refde_synthetic.wav,GF3,en,de,detected language de
+clones/qwen3tts/GF3/GF3_EN_0108_qwen3tts_refde_synthetic.wav,GF3,en,de,detected language de; CER 0.107 above genuine
+clones/qwen3tts/GF3/GF3_EN_0140_qwen3tts_refde_synthetic.wav,GF3,en,de,CER 0.130 above genuine
+clones/qwen3tts/GF4/GF4_DE_0021_qwen3tts_refen_synthetic.wav,GF4,de,en,CER 0.115 above genuine
+clones/qwen3tts/GF4/GF4_DE_0133_qwen3tts_refen_synthetic.wav,GF4,de,en,CER 0.136 above genuine
+clones/qwen3tts/GF4/GF4_EN_0082_qwen3tts_refde_synthetic.wav,GF4,en,de,detected language de
+clones/qwen3tts/GF4/GF4_EN_0026_qwen3tts_refen_synthetic.wav,GF4,en,en,CER 0.147 above genuine
+clones/qwen3tts/GF5/GF5_DE_0134_qwen3tts_refen_synthetic.wav,GF5,de,en,detected language en; CER 0.129 above genuine
+clones/qwen3tts/GF5/GF5_EN_0082_qwen3tts_refde_synthetic.wav,GF5,en,de,detected language de
+clones/qwen3tts/GF5/GF5_EN_0026_qwen3tts_refen_synthetic.wav,GF5,en,en,CER 0.147 above genuine
+clones/qwen3tts/GF5/GF5_EN_0030_qwen3tts_refen_synthetic.wav,GF5,en,en,CER 0.113 above genuine
+clones/qwen3tts/GF6/GF6_DE_0021_qwen3tts_refen_synthetic.wav,GF6,de,en,CER 0.115 above genuine
+clones/qwen3tts/GF6/GF6_DE_0040_qwen3tts_refen_synthetic.wav,GF6,de,en,CER 0.286 above genuine
+clones/qwen3tts/GF6/GF6_DE_0134_qwen3tts_refen_synthetic.wav,GF6,de,en,detected language en; CER 0.226 above genuine
+clones/qwen3tts/GF6/GF6_EN_0066_qwen3tts_refde_synthetic.wav,GF6,en,de,detected language de
+clones/qwen3tts/GF7/GF7_DE_0019_qwen3tts_refen_synthetic.wav,GF7,de,en,detected language en
+clones/qwen3tts/GF7/GF7_DE_0021_qwen3tts_refen_synthetic.wav,GF7,de,en,CER 0.115 above genuine
+clones/qwen3tts/GF7/GF7_EN_0066_qwen3tts_refde_synthetic.wav,GF7,en,de,detected language de
+clones/qwen3tts/GF7/GF7_EN_0140_qwen3tts_refde_synthetic.wav,GF7,en,de,CER 0.261 above genuine
+clones/qwen3tts/GM1/GM1_DE_0085_qwen3tts_refde_synthetic.wav,GM1,de,de,detected language en
+clones/qwen3tts/GM1/GM1_EN_0108_qwen3tts_refde_synthetic.wav,GM1,en,de,CER 0.107 above genuine
+clones/qwen3tts/GM1/GM1_EN_0140_qwen3tts_refde_synthetic.wav,GM1,en,de,CER 0.130 above genuine
+clones/qwen3tts/GM2/GM2_DE_0022_qwen3tts_refen_synthetic.wav,GM2,de,en,CER 0.176 above genuine
+clones/qwen3tts/GM2/GM2_EN_0066_qwen3tts_refde_synthetic.wav,GM2,en,de,detected language de
+clones/qwen3tts/GM2/GM2_EN_0082_qwen3tts_refde_synthetic.wav,GM2,en,de,detected language de
+clones/qwen3tts/GM2/GM2_EN_0108_qwen3tts_refde_synthetic.wav,GM2,en,de,detected language de
+clones/qwen3tts/GM2/GM2_EN_0122_qwen3tts_refen_synthetic.wav,GM2,en,en,CER 0.139 above genuine
+clones/qwen3tts/GM2/GM2_EN_0140_qwen3tts_refen_synthetic.wav,GM2,en,en,CER 0.174 above genuine
+clones/qwen3tts/GM3/GM3_DE_0019_qwen3tts_refen_synthetic.wav,GM3,de,en,detected language en
+clones/qwen3tts/GM3/GM3_DE_0021_qwen3tts_refen_synthetic.wav,GM3,de,en,CER 0.115 above genuine
+clones/qwen3tts/GM3/GM3_DE_0040_qwen3tts_refen_synthetic.wav,GM3,de,en,detected language en
+clones/qwen3tts/GM3/GM3_EN_0082_qwen3tts_refde_synthetic.wav,GM3,en,de,detected language de
+clones/qwen3tts/GM3/GM3_EN_0133_qwen3tts_refde_synthetic.wav,GM3,en,de,CER 0.154 above genuine
+clones/qwen3tts/GM4/GM4_DE_0021_qwen3tts_refen_synthetic.wav,GM4,de,en,CER 0.115 above genuine
+clones/qwen3tts/GM4/GM4_EN_0082_qwen3tts_refde_synthetic.wav,GM4,en,de,detected language de
+clones/qwen3tts/GM4/GM4_EN_0108_qwen3tts_refde_synthetic.wav,GM4,en,de,detected language de; CER 0.107 above genuine
+clones/qwen3tts/GM4/GM4_EN_0030_qwen3tts_refen_synthetic.wav,GM4,en,en,CER 0.113 above genuine
+clones/qwen3tts/GM4/GM4_EN_0134_qwen3tts_refen_synthetic.wav,GM4,en,en,CER 0.103 above genuine
+clones/qwen3tts/GM5/GM5_DE_0021_qwen3tts_refen_synthetic.wav,GM5,de,en,CER 0.115 above genuine
+clones/qwen3tts/GM5/GM5_EN_0030_qwen3tts_refde_synthetic.wav,GM5,en,de,CER 0.113 above genuine
+clones/qwen3tts/GM5/GM5_EN_0082_qwen3tts_refde_synthetic.wav,GM5,en,de,detected language de
+clones/qwen3tts/GM5/GM5_EN_0108_qwen3tts_refde_synthetic.wav,GM5,en,de,CER 0.107 above genuine
+clones/qwen3tts/GM5/GM5_EN_0130_qwen3tts_refde_synthetic.wav,GM5,en,de,CER 0.217 above genuine
+clones/qwen3tts/GM6/GM6_DE_0019_qwen3tts_refen_synthetic.wav,GM6,de,en,detected language en
+clones/qwen3tts/GM6/GM6_EN_0066_qwen3tts_refde_synthetic.wav,GM6,en,de,detected language de
+clones/qwen3tts/GM7/GM7_DE_0021_qwen3tts_refen_synthetic.wav,GM7,de,en,detected language en; CER 0.231 above genuine
+clones/qwen3tts/GM7/GM7_DE_0130_qwen3tts_refen_synthetic.wav,GM7,de,en,detected language en; CER 0.111 above genuine
+clones/qwen3tts/GM7/GM7_EN_0082_qwen3tts_refde_synthetic.wav,GM7,en,de,detected language de
+clones/qwen3tts/GM7/GM7_EN_0030_qwen3tts_refen_synthetic.wav,GM7,en,en,CER 0.113 above genuine
+clones/qwen3tts/GM7/GM7_EN_0140_qwen3tts_refen_synthetic.wav,GM7,en,en,CER 0.174 above genuine

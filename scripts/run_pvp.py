@@ -274,7 +274,8 @@ def main():
         score(profiles, test_df, config, run_dir / "scores.csv", log)
 
         metrics = evaluate(read_scores(run_dir / "scores.csv"))
-        metrics["paper_comparison"] = compare_with_paper(metrics, config["paper"])
+        # null for new evaluations (EMIME): no paper value exists
+        metrics["paper_comparison"] = config["paper"] and compare_with_paper(metrics, config["paper"])
         (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
         record.update({"status": "completed", "finished_at": datetime.now(timezone.utc).isoformat(),
                        "peak_gpu_memory_mib": round(torch.cuda.max_memory_allocated() / 2**20),
