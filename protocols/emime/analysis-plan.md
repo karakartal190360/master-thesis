@@ -242,6 +242,34 @@ downloads: 2026-11-16.
   D4). The report gives, per generator, the number of clones with speech after the last
   word Whisper recognizes, and states that such clones may be easier to detect.
 
+### Addendum C (2026-11-16): VCC2020 Task 2
+
+Written and approved by the user before any VCC2020 score. Seen before it: all German-talker
+results, the Finnish S3 result, the generator pilots.
+
+- Data (user-approved download, MD5 verified): VCC2020 database v1.0 (Zenodo 4345689) and
+  submitted waveforms v1.0.0 (Zenodo 4757530, CC BY 4.0). Targets mapped by waveform
+  correlation of their English ground truth with EMIME (`scripts/prepare_vcc2020.py`,
+  `protocols/vcc2020/mapping.json`): TGF1 = GF1, TGM1 = GM7 (0.91-0.95; next talker at most
+  0.17). The 25 English evaluation sentences are EMIME sentences (10 in our English
+  enrollment, 15 in test).
+- Protocols in `protocols/vcc2020/` (paths relative to `data/`): our EMIME enrollment lists
+  limited to GF1 and GM7 (60 files each per language); test list with their genuine EMIME
+  test files (75 per language each) and all 5,600 English conversions into them (28 teams x
+  4 English source speakers x 25 sentences), `Source` = `en-vcc2020-<team>`.
+- Runs: German and English enrollment over the full test list, upstream code settings,
+  one replay each.
+- Analysis (descriptive, 2 talkers; no bootstrap or significance test): English trials
+  (genuine English and all conversions), EER with the German profile minus EER with the
+  English profile, pooled and per talker; per team; separately for conversions whose text is
+  in our English enrollment (10 sentences) and in our test sentences (15). Reading: the P1
+  direction is confirmed if the difference is positive for both talkers.
+- Known limits: no German conversions (German-test cells, P3 and P4 not defined); the
+  conversion systems were trained on 70 German EMIME recordings of each target, 34 of them in
+  our German enrollment; conversions keep the English source speaker's timing and
+  intonation; baseline teams are not identified (empty `TeamInfo.txt`), all teams are
+  treated alike; sample rates 24, 22.05 and 16 kHz (upstream resamples to 16 kHz).
+
 ## 8. Not covered here
 
 - **Phoneme-level analysis (RQ3).** It needs per-occurrence log-likelihoods, which the

@@ -1,0 +1,19 @@
+{
+  "name": "pvp-vcc2020-de-enroll-mms",
+  "settings": "upstream code settings as in the reproduction configs; new evaluation, our protocol, not Xue's",
+  "analysis_plan": "protocols/emime/analysis-plan.md Section 7, addendum C (VCC2020 confirmation)",
+  "benchmark": "vcc2020",
+  "enroll": "protocols/vcc2020/vcc2020_de_enroll.csv",
+  "enrollment_language": "de",
+  "test": "protocols/vcc2020/vcc2020_test.csv",
+  "audio_root": "data",
+  "backbone": "MMS",
+  "device": "cuda:0",
+  "alpha": 0.8,
+  "top_k": 12,
+  "min_enroll_files": 5,
+  "sources": {
+    "settings": "same values and upstream line references as configs/pvp-famous-figures-mms.json"
+  },
+  "paper": null
+}

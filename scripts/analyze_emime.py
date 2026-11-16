@@ -8,6 +8,7 @@ wrong-speaker controls). Unit of inference: the talker (n = 14).
 - Control (Section 5): EER(wrong profile) - EER(right profile) per cell.
 - Secondary (Section 6): S1-S7.
 - Confirmation, Finnish talkers (Section 7, addendum A): S3 only (genuine speech).
+- Confirmation, VCC2020 Task 2 (addendum C): descriptive only (2 talkers).
 EER and AUC as in evaluate_pvp.py (upstream compute_eer; accept if score >= threshold).
 Values in percent.
 """
@@ -296,6 +297,50 @@ def finnish(run_ids, draws):
     return out
 
 
+def vcc2020(run_ids):
+    """Addendum C: English trials, German minus English profile; per talker, team, text overlap."""
+    test = list(csv.DictReader((ROOT / "protocols/vcc2020/vcc2020_test.csv").open()))
+    part = {(c["team"], c["file"]): c["emime_part"]
+            for c in csv.DictReader((ROOT / "protocols/vcc2020/conversions.csv").open())}
+    runs = {}
+    for e, run_id in run_ids.items():
+        rows = list(csv.DictReader((ROOT / "results/runs" / run_id / "scores.csv").open()))
+        assert len(rows) == len(test)
+        trials = []
+        for row, spec in zip(rows, test):  # same order: trial n = test row n
+            if row["status"] != "scored" or not spec["Source"].startswith("en-"):
+                continue
+            team = spec["Source"].removeprefix("en-vcc2020-") if row["label"] == "spoof" else ""
+            trials.append({"talker": row["speaker"], "genuine": row["label"] == "bonafide",
+                           "team": team, "score": float(row["score"]),
+                           "part": part.get((team, Path(spec["AudioName"]).name), "")})
+        runs[e] = {"trials": trials, "failed": sum(r["status"] != "scored" for r in rows)}
+
+    def cell(e, keep):
+        chosen = [x for x in runs[e]["trials"] if keep(x)]
+        labels = np.array([x["genuine"] for x in chosen])
+        scores = np.array([x["score"] for x in chosen])
+        return {"eer": round(eer(labels, scores)[0], 3), "auc": round(auc(labels, scores), 3),
+                "genuine": int(labels.sum()), "spoofs": int((~labels).sum())}
+
+    def contrast(keep):
+        de, en = cell("de", keep), cell("en", keep)
+        return {"german_profile": de, "english_profile": en,
+                "eer_difference": round(de["eer"] - en["eer"], 3)}
+
+    talkers = sorted({x["talker"] for x in runs["de"]["trials"]})
+    teams = sorted({x["team"] for x in runs["de"]["trials"] if x["team"]})
+    out = {"failed_trials": {e: r["failed"] for e, r in runs.items()},
+           "pooled": contrast(lambda x: True),
+           "per_talker": {t: contrast(lambda x, t=t: x["talker"] == t) for t in talkers},
+           "per_team": {m: contrast(lambda x, m=m: x["genuine"] or x["team"] == m) for m in teams},
+           "text_in_english_enrollment": contrast(lambda x: x["genuine"] or x["part"] == "enroll"),
+           "text_in_english_test": contrast(lambda x: x["genuine"] or x["part"] == "test")}
+    out["teams_positive"] = sum(v["eer_difference"] > 0 for v in out["per_team"].values())
+    out["direction_confirmed"] = all(v["eer_difference"] > 0 for v in out["per_talker"].values())
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--de", help="run ID, German enrollment")
@@ -304,7 +349,11 @@ def main():
     parser.add_argument("--en-wrong", help="run ID, English enrollment, wrong speaker")
     parser.add_argument("--finnish", nargs=2, metavar=("FI_RUN", "EN_RUN"),
                         help="confirmation only: Finnish talkers, Finnish and English enrollment runs")
+    parser.add_argument("--vcc", nargs=2, metavar=("DE_RUN", "EN_RUN"),
+                        help="confirmation only: VCC2020, German and English enrollment runs")
     args = parser.parse_args()
+    if args.vcc:
+        return main_vcc(args.vcc)
     if args.finnish:
         return main_finnish(args.finnish)
     if not all([args.de, args.en, args.de_wrong, args.en_wrong]):
@@ -375,6 +424,23 @@ def main_finnish(ids):
     (out / "analysis.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps({k: {kk: v[kk] for kk in ["pooled", "ci95", "talkers_positive", "confirmed"]}
                       for k, v in result["finnish"].items() if k.startswith("S3")}, indent=1))
+    print(f"analysis: {out}")
+
+
+def main_vcc(ids):
+    run_ids = {"de": ids[0], "en": ids[1]}
+    result = {**provenance(run_ids), "purpose": "emime_confirmation_vcc2020",
+              "reading": "direction confirmed if the English-trial EER is higher with the German "
+                         "profile for both talkers; descriptive, no significance test (2 talkers)",
+              "vcc2020": vcc2020(run_ids)}
+    result["settings"] = {"units": "percent", "accept_rule": "score >= threshold"}
+    out = ROOT / "results/analysis/vcc2020" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out.mkdir(parents=True)
+    (out / "analysis.json").write_text(json.dumps(result, indent=2) + "\n")
+    v = result["vcc2020"]
+    print(json.dumps({k: v[k] for k in ["failed_trials", "pooled", "per_talker", "teams_positive",
+                                        "direction_confirmed", "text_in_english_enrollment",
+                                        "text_in_english_test"]}, indent=1))
     print(f"analysis: {out}")
 
 
