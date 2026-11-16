@@ -207,6 +207,35 @@ Written before any Finnish score. Seen before it: all German-talker results of S
   entirely above 50%. Reported next to the German talkers' S3 values (German profile
   87.58, English profile 82.75).
 
+### Addendum B (2026-11-16): generators 2 and 3
+
+Written before any clone of these generators exists. Seen before it: all German-talker
+results and the Finnish S3 result. User approval of both generators and their weight
+downloads: 2026-11-16.
+
+- Generators: VoxCPM2 (`openbmb/VoxCPM2`, revision `7936080b`, Apache 2.0, 48 kHz output;
+  model card "ultimate cloning": the voice prompt as reference and as prompt with its
+  transcript, `cfg_value` 2.0, 10 steps, no denoiser, no text normalization) and XTTS v2
+  (`coqui/XTTS-v2`, revision `6c2b0d75`, Coqui Public Model License, non-commercial, 24 kHz;
+  `Xtts.synthesize` with the checkpoint's settings, voice prompt audio only, no transcript).
+  Weights pinned in `configs/clone-generators.json`; environments from
+  `requirements/{voxcpm,xtts}-linux-py312.lock`. Setup checks on Qwen's example voice
+  (`scripts/check_clone_generator.py`): offline loading, seeded repeats bit-identical.
+- Each clone uses the same voice-prompt recording as the Qwen3-TTS clone of the same trial;
+  its seed comes from its own file name. Test lists `emime_test_voxcpm2.csv` and
+  `emime_test_xtts.csv` (`scripts/make_generator_protocol.py`): genuine rows identical to
+  `emime_test.csv`, clone paths and `Source` renamed.
+- Gate before full generation, as for Qwen3-TTS: 40-clone pilot (GF1, GM1), quality checks
+  and the user's listening verdict. No clone is excluded for quality reasons (D4); quality
+  results are reported per generator.
+- Runs: German and English enrollment per generator over its full test list, upstream code
+  settings, one replay each. The wrong-speaker control is not repeated.
+- Analysis: P1-P4 with the statistics and readings of Section 4, per generator, plus the
+  four cells (S1). A primary result is confirmed for a generator if its reading equals the
+  Qwen3-TTS reading (P1 and P2: "meaningful loss"; RQ2: "the genuine shift dominates").
+  Genuine trials are the same files as in the main runs, so their scores must equal the
+  main runs' scores; any difference is reported.
+
 ## 8. Not covered here
 
 - **Phoneme-level analysis (RQ3).** It needs per-occurrence log-likelihoods, which the
