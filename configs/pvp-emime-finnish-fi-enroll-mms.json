@@ -1,0 +1,19 @@
+{
+  "name": "pvp-emime-finnish-fi-enroll-mms",
+  "settings": "upstream code settings as in the reproduction configs; new evaluation, our protocol, not Xue's",
+  "analysis_plan": "protocols/emime/analysis-plan.md Section 7, addendum A (confirmation, S3 only)",
+  "benchmark": "emime_finnish",
+  "enroll": "protocols/emime/finnish/emime_fi_enroll.csv",
+  "enrollment_language": "fi",
+  "test": "protocols/emime/finnish/emime_test.csv",
+  "audio_root": "data/emime",
+  "backbone": "MMS",
+  "device": "cuda:0",
+  "alpha": 0.8,
+  "top_k": 12,
+  "min_enroll_files": 5,
+  "sources": {
+    "settings": "same values and upstream line references as configs/pvp-famous-figures-mms.json"
+  },
+  "paper": null
+}

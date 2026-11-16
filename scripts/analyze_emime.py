@@ -7,6 +7,7 @@ wrong-speaker controls). Unit of inference: the talker (n = 14).
   patterns, two-sided), Holm over P1-P4, margin reading for P1/P2 (2.0 EER points).
 - Control (Section 5): EER(wrong profile) - EER(right profile) per cell.
 - Secondary (Section 6): S1-S7.
+- Confirmation, Finnish talkers (Section 7, addendum A): S3 only (genuine speech).
 EER and AUC as in evaluate_pvp.py (upstream compute_eer; accept if score >= threshold).
 Values in percent.
 """
@@ -34,6 +35,7 @@ MARGIN = 2.0  # D1, EER points
 ALPHA = 0.8  # upstream fusion weight
 LANGS = ["de", "en"]
 TALKERS = [f"G{s}{i}" for s in "FM" for i in range(1, 8)]
+FINNISH_TALKERS = [f"F{s}{i}" for s in "FM" for i in range(1, 8)]
 OTHER = {"de": "en", "en": "de"}
 
 
@@ -41,12 +43,12 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def load_run(run_id, leave_out):
+def load_run(run_id, leave_out, talkers=TALKERS):
     """Per true talker: arrays of label, test language, prompt language, scores."""
     rows = list(csv.DictReader((ROOT / "results/runs" / run_id / "scores.csv").open()))
     failed = [r["file"] for r in rows if r["status"] != "scored"]
     data = {}
-    for t in TALKERS:
+    for t in talkers:
         own = [r for r in rows if r["status"] == "scored" and re.match(rf"{t}_", r["file"])]
         data[t] = {
             "label": np.array([r["label"] == "bonafide" for r in own]),
@@ -229,10 +231,10 @@ def cells(runs, draws):
     return out
 
 
-def language_auc(run, talkers, e, kind):
+def language_auc(run, talkers, e, kind, other=OTHER):
     """S3: positive = trials in the profile's language, negative = the other language."""
     pos = gather(run, talkers, e, kind=kind)[1]
-    neg = gather(run, talkers, OTHER[e], kind=kind)[1]
+    neg = gather(run, talkers, other[e], kind=kind)[1]
     labels = np.concatenate([np.ones(len(pos), bool), np.zeros(len(neg), bool)])
     return auc(labels, np.concatenate([pos, neg]))
 
@@ -278,13 +280,35 @@ def secondary(runs, draws):
     return out
 
 
+def finnish(run_ids, draws):
+    """Addendum A: S3 for the Finnish talkers (genuine only), with per-talker values."""
+    other = {"fi": "en", "en": "fi"}
+    runs = {k: load_run(v, set(), FINNISH_TALKERS) for k, v in run_ids.items()}
+    failed = {k: len(v[1]) for k, v in runs.items()}
+    out = {"failed_trials": failed}
+    for e in ["fi", "en"]:
+        run = runs[e][0]
+        fn = lambda ts: language_auc(run, ts, e, "genuine", other)
+        result = summary(fn(FINNISH_TALKERS), bootstrap(fn, draws),
+                         {t: fn([t]) - 50 for t in FINNISH_TALKERS})  # per talker: AUC minus 50
+        result["confirmed"] = result["ci95"][0] > 50
+        out[f"S3_enroll_{e}_genuine"] = result
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--de", required=True, help="run ID, German enrollment")
-    parser.add_argument("--en", required=True, help="run ID, English enrollment")
-    parser.add_argument("--de-wrong", required=True, help="run ID, German enrollment, wrong speaker")
-    parser.add_argument("--en-wrong", required=True, help="run ID, English enrollment, wrong speaker")
+    parser.add_argument("--de", help="run ID, German enrollment")
+    parser.add_argument("--en", help="run ID, English enrollment")
+    parser.add_argument("--de-wrong", help="run ID, German enrollment, wrong speaker")
+    parser.add_argument("--en-wrong", help="run ID, English enrollment, wrong speaker")
+    parser.add_argument("--finnish", nargs=2, metavar=("FI_RUN", "EN_RUN"),
+                        help="confirmation only: Finnish talkers, Finnish and English enrollment runs")
     args = parser.parse_args()
+    if args.finnish:
+        return main_finnish(args.finnish)
+    if not all([args.de, args.en, args.de_wrong, args.en_wrong]):
+        parser.error("main analysis needs --de, --en, --de-wrong and --en-wrong")
     run_ids = {"de": args.de, "en": args.en, "de_wrong": args.de_wrong, "en_wrong": args.en_wrong}
     sensitivity = ROOT / "protocols/emime/sensitivity_clones.csv"
     leave_out = {Path(r["file"]).name for r in csv.DictReader(sensitivity.open())}
@@ -322,6 +346,35 @@ def main():
                                   if isinstance(v, dict) else v for k, v in result["primary"].items()},
                       "control": {k: {kk: v[kk] for kk in ["right_eer", "wrong_eer", "pooled", "ci95"]}
                                   for k, v in result["control"].items()}}, indent=1))
+    print(f"analysis: {out}")
+
+
+def provenance(run_ids):
+    return {
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "analysis_plan": "protocols/emime/analysis-plan.md",
+        "analysis_plan_sha256": sha256(ROOT / "protocols/emime/analysis-plan.md"),
+        "command": [sys.executable, *sys.argv],
+        "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "git_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True)),
+        "script_sha256": sha256(__file__), "runs": run_ids,
+        "scores_sha256": {k: sha256(ROOT / "results/runs" / v / "scores.csv") for k, v in run_ids.items()},
+        "settings": {"seed": SEED, "draws": DRAWS, "units": "percent", "unit_of_inference": "talker (14)"},
+    }
+
+
+def main_finnish(ids):
+    run_ids = {"fi": ids[0], "en": ids[1]}
+    draws = np.random.default_rng(SEED).integers(0, len(FINNISH_TALKERS), size=(DRAWS, len(FINNISH_TALKERS)))
+    draws = [[FINNISH_TALKERS[i] for i in d] for d in draws]
+    result = {**provenance(run_ids), "purpose": "emime_confirmation_finnish_s3",
+              "reading": "confirmed if the 95% interval of the AUC lies entirely above 50",
+              "finnish": finnish(run_ids, draws)}
+    out = ROOT / "results/analysis/emime-finnish" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out.mkdir(parents=True)
+    (out / "analysis.json").write_text(json.dumps(result, indent=2) + "\n")
+    print(json.dumps({k: {kk: v[kk] for kk in ["pooled", "ci95", "talkers_positive", "confirmed"]}
+                      for k, v in result["finnish"].items() if k.startswith("S3")}, indent=1))
     print(f"analysis: {out}")
 
 

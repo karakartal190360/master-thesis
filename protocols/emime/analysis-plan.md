@@ -181,6 +181,32 @@ confirmation of P1-P4:
 Each gets a dated addendum to this plan (data, trial list, commit) before its first
 score.
 
+### Addendum A (2026-11-16): Finnish talkers, S3
+
+Written before any Finnish score. Seen before it: all German-talker results of Sections
+3-6 (analysis `results/analysis/emime/20261116T141441Z`) and the Finnish file check.
+
+- Data: EMIME v1.0 Finnish talkers FF1-FF7, FM1-FM7, 22 kHz, microphone 0
+  (`scripts/prepare_emime.py --group finnish`, report
+  `results/datasets/emime-finnish-talkers-check.json`): 7,970 files, no decode error, no
+  identical audio, no near-silent file, nothing excluded. FM4 and FM7 lack microphone-0
+  Finnish sentences 5-54 (FM7 not stated in the README); listed in
+  `finnish/missing.csv` and left out.
+- Phoneme recognizer setup check on 4 Finnish files: plausible Finnish phonemes, all
+  inside the upstream phoneme classes (`vocab.json`).
+- Same sentence split as the German talkers (same seed and types); no clones, so the
+  reference sentences are unused.
+- Protocols in `finnish/`: `emime_fi_enroll.csv` (798 files; FM4 and FM7 39 each),
+  `emime_en_enroll.csv` (840), `emime_test.csv` (2,046 genuine: Finnish 996, English 1,050).
+- Runs: Finnish enrollment and English enrollment over the full test list, upstream code
+  settings (`configs/pvp-emime-finnish-{fi,en}-enroll-mms.json`), one replay each.
+- Analysis: S3 only (Section 6): per profile, AUC of genuine speech in the profile's
+  language against genuine speech in the other language, talker bootstrap as in
+  Section 4; per-talker values (AUC minus 50) with the sign-flip test. Reading: the
+  language effect on genuine speech is confirmed for a profile if its 95% interval lies
+  entirely above 50%. Reported next to the German talkers' S3 values (German profile
+  87.58, English profile 82.75).
+
 ## 8. Not covered here
 
 - **Phoneme-level analysis (RQ3).** It needs per-occurrence log-likelihoods, which the
