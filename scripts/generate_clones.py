@@ -207,7 +207,8 @@ def main():
 
     synthesize = {"qwen3tts": load_qwen3tts, "voxcpm2": load_voxcpm2, "xtts": load_xtts}[args.system](model_dir)
     counts = {}
-    with (run_dir / "clones.csv").open("w", newline="") as stream:
+    # explicit UTF-8: loading VoxCPM2 switches the process locale to ASCII
+    with (run_dir / "clones.csv").open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=COLUMNS, extrasaction="ignore")
         writer.writeheader()
         for n, job in enumerate(jobs, 1):

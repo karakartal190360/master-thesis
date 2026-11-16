@@ -177,7 +177,7 @@ def listening_folder(clones, run_id):
             sheet.append({"file": f"{c['speaker']}/{name}", "kind": kind, "speaker": c["speaker"],
                           "language": c["language"] if kind != "voice prompt (genuine)" else c["ref_language"],
                           "your_rating (good/bad)": "", "notes": ""})
-    with (out / "ratings.csv").open("w", newline="") as stream:
+    with (out / "ratings.csv").open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(sheet[0]))
         writer.writeheader()
         writer.writerows(sorted(sheet, key=lambda r: r["file"]))
