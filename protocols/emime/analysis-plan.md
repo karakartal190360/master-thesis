@@ -235,6 +235,12 @@ downloads: 2026-11-16.
   Qwen3-TTS reading (P1 and P2: "meaningful loss"; RQ2: "the genuine shift dominates").
   Genuine trials are the same files as in the main runs, so their scores must equal the
   main runs' scores; any difference is reported.
+- Added 2026-11-16, after the pilots and before the full generation (no score of these
+  generators exists): 6 of 20 German XTTS pilot clones continue with 2-11 s of speech-like
+  babble after the sentence (found by listening; Whisper ignores it, so word error misses
+  it). Decision of the user: keep all clones as generated, no regeneration (consistent with
+  D4). The report gives, per generator, the number of clones with speech after the last
+  word Whisper recognizes, and states that such clones may be easier to detect.
 
 ## 8. Not covered here
 
