@@ -9,6 +9,7 @@ wrong-speaker controls). Unit of inference: the talker (n = 14).
 - Secondary (Section 6): S1-S7.
 - Confirmation, Finnish talkers (Section 7, addendum A): S3 only (genuine speech).
 - Confirmation, VCC2020 Task 2 (addendum C): descriptive only (2 talkers).
+- Confirmation, generators 2 and 3 (addendum B): P1-P4 and S1 per generator.
 EER and AUC as in evaluate_pvp.py (upstream compute_eer; accept if score >= threshold).
 Values in percent.
 """
@@ -38,6 +39,9 @@ LANGS = ["de", "en"]
 TALKERS = [f"G{s}{i}" for s in "FM" for i in range(1, 8)]
 FINNISH_TALKERS = [f"F{s}{i}" for s in "FM" for i in range(1, 8)]
 OTHER = {"de": "en", "en": "de"}
+# Addendum B: readings of the Qwen3-TTS main analysis (20261116T141441Z) and its runs
+MAIN_READINGS = {"P1": "meaningful loss", "P2": "meaningful loss", "RQ2": "the genuine shift dominates"}
+MAIN_RUNS = {"de": "20261116T133835Z-7bf295ad", "en": "20261116T134415Z-b5642276"}
 
 
 def sha256(path):
@@ -341,6 +345,42 @@ def vcc2020(run_ids):
     return out
 
 
+def genuine_identity(run_ids):
+    """Genuine trials are the same files as in the main runs: their scores must be equal."""
+    out = {}
+    for e, run_id in run_ids.items():
+        def genuine(rid):
+            rows = csv.DictReader((ROOT / "results/runs" / rid / "scores.csv").open())
+            return {r["file"]: float(r["score"]) for r in rows if r["label"] == "bonafide" and r["status"] == "scored"}
+        a, b = genuine(MAIN_RUNS[e]), genuine(run_id)
+        out[e] = {"files": len(a), "same_files": set(a) == set(b),
+                  "max_abs_difference": max(abs(a[f] - b[f]) for f in a if f in b)}
+    return out
+
+
+def main_generator(system, run_ids):
+    runs, failed = {}, {}
+    for key, run_id in run_ids.items():
+        runs[key], failed[key] = load_run(run_id, set())
+    if any(failed.values()):
+        sys.exit(f"failed trials present, pairing rule needed first: { {k: len(v) for k, v in failed.items()} }")
+    draws = np.random.default_rng(SEED).integers(0, len(TALKERS), size=(DRAWS, len(TALKERS)))
+    draws = [[TALKERS[i] for i in d] for d in draws]
+    primary_result = primary(runs, draws)
+    readings = {"P1": primary_result["P1"]["reading"], "P2": primary_result["P2"]["reading"],
+                "RQ2": primary_result["RQ2_reading"]}
+    result = {**provenance(run_ids), "purpose": f"emime_confirmation_generator_{system}",
+              "system": system, "main_readings": MAIN_READINGS, "readings": readings,
+              "confirmed": {k: readings[k] == MAIN_READINGS[k] for k in MAIN_READINGS},
+              "genuine_scores_vs_main_runs": genuine_identity(run_ids),
+              "primary": primary_result, "S1": cells(runs, draws)}
+    out = ROOT / f"results/analysis/emime-{system}" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out.mkdir(parents=True)
+    (out / "analysis.json").write_text(json.dumps(result, indent=2) + "\n")
+    print(json.dumps({k: result[k] for k in ["readings", "confirmed", "genuine_scores_vs_main_runs"]}, indent=1))
+    print(f"analysis: {out}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--de", help="run ID, German enrollment")
@@ -351,7 +391,13 @@ def main():
                         help="confirmation only: Finnish talkers, Finnish and English enrollment runs")
     parser.add_argument("--vcc", nargs=2, metavar=("DE_RUN", "EN_RUN"),
                         help="confirmation only: VCC2020, German and English enrollment runs")
+    parser.add_argument("--generator", choices=["voxcpm2", "xtts"],
+                        help="confirmation only: generator 2 or 3 with --de and --en")
     args = parser.parse_args()
+    if args.generator:
+        if not (args.de and args.en):
+            parser.error("--generator needs --de and --en")
+        return main_generator(args.generator, {"de": args.de, "en": args.en})
     if args.vcc:
         return main_vcc(args.vcc)
     if args.finnish:
