@@ -1,0 +1,19 @@
+{
+  "name": "pvp-emime-en-enroll-xtts-mms",
+  "settings": "upstream code settings as in the reproduction configs; new evaluation, our protocol, not Xue's",
+  "analysis_plan": "protocols/emime/analysis-plan.md Section 7, addendum B (generator confirmation)",
+  "benchmark": "emime_xtts",
+  "enroll": "protocols/emime/emime_en_enroll.csv",
+  "enrollment_language": "en",
+  "test": "protocols/emime/emime_test_xtts.csv",
+  "audio_root": "data/emime",
+  "backbone": "MMS",
+  "device": "cuda:0",
+  "alpha": 0.8,
+  "top_k": 12,
+  "min_enroll_files": 5,
+  "sources": {
+    "settings": "same values and upstream line references as configs/pvp-famous-figures-mms.json"
+  },
+  "paper": null
+}
